@@ -1,4 +1,4 @@
-Go-Ecoball
+Eballscan
 -------
 
 ## Depends
