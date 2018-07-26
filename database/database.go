@@ -36,7 +36,7 @@ var (
 func init() {
 	// Connect to the "bank" database.
 	var err error
-	CockroachDb, err = sql.Open("postgres", "postgresql://ecoball@localhost:26257/blockchain?sslmode=disable")
+	CockroachDb, err = sql.Open("postgres", "postgresql://eballscan@localhost:26257/blockchain?sslmode=disable")
 	if err != nil {
 		log.Fatal("error connecting to the database: ", err)
 	}
