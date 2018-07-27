@@ -20,12 +20,13 @@ import (
 	"encoding/json"
 	"net"
 
+	"github.com/ecoball/go-ecoball/common/elog"
 	"github.com/ecoball/go-ecoball/spectator/info"
-	"github.com/ethereum/go-ethereum/log"
 )
 
 var (
 	MaxHight int
+	log      = elog.NewLogger("syn", elog.DebugLog)
 )
 
 type BlockHight int
