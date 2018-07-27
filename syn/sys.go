@@ -14,13 +14,18 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the eballscan. If not, see <http://www.gnu.org/licenses/>.
 
-package database
+package syn
 
 import (
 	"encoding/json"
 	"net"
 
 	"github.com/ecoball/go-ecoball/spectator/info"
+	"github.com/ethereum/go-ethereum/log"
+)
+
+var (
+	MaxHight int
 )
 
 type BlockHight int

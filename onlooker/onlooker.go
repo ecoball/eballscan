@@ -20,6 +20,7 @@ import (
 	"net"
 
 	"github.com/ecoball/eballscan/database"
+	"github.com/ecoball/eballscan/syn"
 	"github.com/ecoball/go-ecoball/common"
 	"github.com/ecoball/go-ecoball/common/elog"
 	"github.com/ecoball/go-ecoball/core/types"
@@ -37,7 +38,7 @@ func Bystander() {
 		return
 	}
 
-	database.SynBlocks(conn)
+	syn.SynBlocks(conn)
 
 	buf := make([]byte, 1024*10)
 	for {
