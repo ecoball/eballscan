@@ -75,5 +75,5 @@ func handleBlock(info []byte) error {
 	}
 
 	return database.AddBlock(int(oneBlock.Height), int(oneBlock.CountTxs), common.ToHex(oneBlock.Hash.Bytes()), common.ToHex(oneBlock.PrevHash.Bytes()),
-		common.ToHex(oneBlock.MerkleHash.Bytes()), common.ToHex(oneBlock.StateHash.Bytes()))
+		common.ToHex(oneBlock.MerkleHash.Bytes()), common.ToHex(oneBlock.StateHash.Bytes()), oneBlock.Transactions)
 }

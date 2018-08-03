@@ -24,13 +24,15 @@ import (
 	"github.com/ecoball/eballscan/data"
 	"github.com/ecoball/eballscan/syn"
 	"github.com/ecoball/go-ecoball/common/elog"
+	"github.com/ecoball/go-ecoball/core/types"
 	_ "github.com/lib/pq"
 )
 
 var (
 	CockroachDb *sql.DB
 	DbMutex     sync.Mutex
-	log         = elog.NewLogger("database", elog.DebugLog)
+	log             = elog.NewLogger("database", elog.DebugLog)
+	Tx_index    int = 0
 )
 
 func init() {
@@ -47,7 +49,11 @@ func init() {
 			hash varchar(70), prevHash varchar(70), merkleHash varchar(70), stateHash varchar(70), countTxs int)`); err != nil {
 		log.Fatal(err)
 	}
-
+	if _, err = CockroachDb.Exec(
+		`create table if not exists transactions (version int primary key, 
+			ty int, from int, permission varchar(70), addr int, nonce int, timeStamp int)`); err != nil {
+		log.Fatal(err)
+	}
 	// Print out the balances.
 	rows, errQuery := CockroachDb.Query("select hight, hash, prevHash, merkleHash, stateHash, countTxs from blocks")
 	if errQuery != nil {
@@ -71,9 +77,28 @@ func init() {
 			syn.MaxHight = hight
 		}
 	}
+	txrows, txerrQuery := CockroachDb.Query("select version, ty, from, permission, addr, nonce, timeStamp from transactions")
+	if txerrQuery != nil {
+		log.Fatal(err)
+	}
+	defer txrows.Close()
+
+	for txrows.Next() {
+		var (
+			version, nonce, timeStamp, ty, from, addr int
+			permission                                string
+		)
+
+		if err := rows.Scan(&version, &ty, &from, &permission, &addr, &nonce, &timeStamp); err != nil {
+			log.Fatal(err)
+		}
+
+		data.Txs.Add(Tx_index, data.TxInfo{version, ty, from, permission, addr, nonce, timeStamp})
+		Tx_index++
+	}
 }
 
-func AddBlock(hight, countTxs int, hash, prevHash, merkleHash, stateHash string) error {
+func AddBlock(hight, countTxs int, hash, prevHash, merkleHash, stateHash string, ts []*types.Transaction) error {
 	DbMutex.Lock()
 	defer DbMutex.Unlock()
 
@@ -84,7 +109,19 @@ func AddBlock(hight, countTxs int, hash, prevHash, merkleHash, stateHash string)
 	if nil != err {
 		return err
 	}
-
 	data.Blocks.Add(hight, data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs})
+
+	var transaction string
+	for _, v := range ts {
+
+		transaction = fmt.Sprintf(`(%d, '%d', '%d', '%s', '%d', '%d','%d')`, v.Version, v.Type, v.From, v.Permission, v.Addr, v.Nonce, v.TimeStamp)
+		transaction = "insert into transactions(version, ty, from, permission, addr, nonce, timeStamp) values" + values
+		_, err := CockroachDb.Exec(transaction)
+		if nil != err {
+			return err
+		}
+		data.Txs.Add(Tx_index, data.TxInfo{int(v.Version), int(v.Type), int(v.From), v.Permission, int(v.Addr), int(v.Nonce), int(v.TimeStamp)})
+		Tx_index++
+	}
 	return nil
 }
