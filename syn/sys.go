@@ -20,13 +20,13 @@ import (
 	"encoding/json"
 	"net"
 
+	"github.com/ecoball/eballscan/database"
 	"github.com/ecoball/go-ecoball/common/elog"
 	"github.com/ecoball/go-ecoball/spectator/info"
 )
 
 var (
-	MaxHight int
-	log      = elog.NewLogger("syn", elog.DebugLog)
+	log = elog.NewLogger("syn", elog.DebugLog)
 )
 
 type BlockHight int
@@ -40,20 +40,22 @@ func (this *BlockHight) Deserialize(data []byte) error {
 }
 
 func SynBlocks(conn net.Conn) {
-	hight := BlockHight(MaxHight)
+	hight := BlockHight(database.MaxHight)
 	oneNotify, err := info.NewOneNotify(info.SynBlock, &hight)
 	if nil != err {
 		log.Error("SynBlocks newOneNotify error: ", err)
 		return
 	}
 
-	info, err := oneNotify.Serialize()
+	one, err := oneNotify.Serialize()
 	if nil != err {
 		log.Error("SynBlocks Serialize error: ", err)
 		return
 	}
 
-	if _, err := conn.Write(info); nil != err {
+	one = info.MessageDecorate(one)
+
+	if _, err := conn.Write(one); nil != err {
 		log.Error("SynBlocks Write error: ", err)
 	}
 }

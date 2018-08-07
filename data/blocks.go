@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	Blocks = Block{BlocksInfo: make(map[int]BlockInfo, 0)}
+	Blocks = Block{BlocksInfo: make(map[int]BlockInfo)}
 	log    = elog.NewLogger("data", elog.DebugLog)
 )
 
@@ -42,14 +42,14 @@ type Block struct {
 	sync.RWMutex
 }
 
-func (this *Block) Add(hight int, info BlockInfo) {
+func (this *Block) Add(hight int, info *BlockInfo) {
 	this.Lock()
 	defer this.Unlock()
 
 	if _, ok := this.BlocksInfo[hight]; ok {
 		return
 	}
-	this.BlocksInfo[hight] = info
+	this.BlocksInfo[hight] = *info
 }
 
 func PrintBlock() string {

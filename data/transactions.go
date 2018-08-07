@@ -17,48 +17,34 @@
 package data
 
 import (
-	"fmt"
 	"sync"
 )
 
 var (
-	Txs = TX{TxsInfo: make(map[int]TxInfo, 0)}
+	Transactions = Transaction{TxsInfo: make(map[string]TransactionInfo)}
 )
 
-type TxInfo struct {
-	Version    int
-	Type       int
-	From       int
+type TransactionInfo struct {
+	TxType     int
+	TimeStamp  string
 	Permission string
-	Addr       int
-	Nonce      int
-	TimeStamp  int
+	TxFrom     string
+	Address    string
+	BlockHight int
 }
 
-type TX struct {
-	TxsInfo map[int]TxInfo
+type Transaction struct {
+	TxsInfo map[string]TransactionInfo
 
 	sync.RWMutex
 }
 
-func (this *TX) Add(index int, info TxInfo) {
+func (this *Transaction) Add(hash string, info *TransactionInfo) {
 	this.Lock()
 	defer this.Unlock()
 
-	if _, ok := this.TxsInfo[index]; ok {
+	if _, ok := this.TxsInfo[hash]; ok {
 		return
 	}
-	this.TxsInfo[index] = info
-}
-
-func PrintTX() string {
-	Txs.RLock()
-	defer Txs.RUnlock()
-
-	result := "version\ttype\tfrom\tpermission\taddr\tnonce\ttimeStamp"
-	for _, v := range Txs.TxsInfo {
-		result += fmt.Sprintf("%d\t%d\t%d\t%s\t%d\t%d\t%d\n", v.Version, v.Type, v.From, v.Permission, v.Addr, v.Nonce, v.TimeStamp)
-	}
-
-	return result
+	this.TxsInfo[hash] = *info
 }

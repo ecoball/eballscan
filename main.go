@@ -38,9 +38,9 @@ func (this *webserver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "/":
 		t := template.Must(template.ParseFiles("./root.html"))
 		t.Execute(w, data.PrintBlock())
-	case "/tx":
-		t := template.Must(template.ParseFiles("./transaction.html"))
-		t.Execute(w, data.PrintTX())
+	/*case "/tx":
+	t := template.Must(template.ParseFiles("./transaction.html"))
+	t.Execute(w, data.PrintTX())*/
 
 	default:
 		err = errors.New("unrecognized transaction type")

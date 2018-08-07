@@ -18,62 +18,44 @@ package onlooker
 
 import (
 	"net"
+	"os"
 
-	"github.com/ecoball/eballscan/database"
+	"github.com/ecoball/eballscan/notify"
 	"github.com/ecoball/eballscan/syn"
-	"github.com/ecoball/go-ecoball/common"
 	"github.com/ecoball/go-ecoball/common/elog"
-	"github.com/ecoball/go-ecoball/core/types"
 	"github.com/ecoball/go-ecoball/spectator/info"
 )
 
 var (
-	log = elog.NewLogger("onlooker", elog.DebugLog)
+	log  = elog.NewLogger("onlooker", elog.DebugLog)
+	Conn net.Conn
 )
 
 func Bystander() {
-	conn, err := net.Dial("tcp", "127.0.0.1:9000")
+	//Connect to server node
+	var err error
+	Conn, err = net.Dial("tcp", "127.0.0.1:9000")
 	if err != nil {
 		log.Error("explorer server net.Dial error: ", err)
-		return
+		os.Exit(1)
 	}
 
-	syn.SynBlocks(conn)
+	//synchronous data
+	go syn.SynBlocks(Conn)
 
-	buf := make([]byte, 1024*10)
+	//Get the notify data and process it
 	for {
-		n, err := conn.Read(buf)
-		if err != nil {
-			log.Error("explorer server conn.Read error: ", err)
-			break
+		buf, n, err := info.ReadData(Conn)
+		if nil != err {
+			log.Error("explorer server read data error: ", err)
+			continue
 		}
 
-		notify := info.OneNotify{info.InfoNil, []byte{}}
-		if err := notify.Deserialize(buf[:n]); nil != err {
+		one := info.OneNotify{info.InfoNil, []byte{}}
+		if err := one.Deserialize(buf[:n]); nil != err {
 			log.Error("explorer server notify.Deserialize error: ", err)
 			continue
 		}
-		go dispatch(notify)
+		go notify.Dispatch(one)
 	}
-}
-
-func dispatch(notify info.OneNotify) {
-	switch notify.InfoType {
-	case info.InfoBlock:
-		if err := handleBlock(notify.Info); nil != err {
-			log.Error("handleBlock error: ", err)
-		}
-	default:
-
-	}
-}
-
-func handleBlock(info []byte) error {
-	oneBlock := types.Block{}
-	if err := oneBlock.Deserialize(info); nil != err {
-		return err
-	}
-
-	return database.AddBlock(int(oneBlock.Height), int(oneBlock.CountTxs), common.ToHex(oneBlock.Hash.Bytes()), common.ToHex(oneBlock.PrevHash.Bytes()),
-		common.ToHex(oneBlock.MerkleHash.Bytes()), common.ToHex(oneBlock.StateHash.Bytes()), oneBlock.Transactions)
 }
