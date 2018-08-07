@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	TRANSACTION_SPAN time.Duration = 20
+	TRANSACTION_SPAN time.Duration = 20 * time.Second
 )
 
 var (

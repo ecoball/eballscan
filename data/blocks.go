@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	BLOCK_SPAN time.Duration = 20
+	BLOCK_SPAN time.Duration = 20 * time.Second
 )
 
 var (
