@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/ecoball/eballscan/data"
+	"github.com/muesli/cache2go"
 )
 
 var (
@@ -56,12 +57,28 @@ func initBlock() (err error) {
 			break
 		}
 
-		data.Blocks.Add(hight, &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs})
+		data.AddBlock(hight, &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs})
 
 		if hight > MaxHight {
 			MaxHight = hight
 		}
 	}
+
+	//set loader
+	data.Blocks.SetDataLoader(func(key interface{}, args ...interface{}) *cache2go.CacheItem {
+		hight, ok := key.(int)
+		if !ok {
+			return nil
+		}
+
+		val, err := queryOneBlock(hight)
+		if nil != err {
+			return nil
+		}
+
+		item := cache2go.NewCacheItem(hight, data.BLOCK_SPAN, *val)
+		return item
+	})
 
 	return
 }
@@ -76,4 +93,18 @@ func AddBlock(hight, countTxs int, hash, prevHash, merkleHash, stateHash string)
 	}
 
 	return
+}
+
+func queryOneBlock(hight int) (*data.BlockInfo, error) {
+	var (
+		countTxs                                      int
+		hash, prevHash, merkleHash, stateHash, sqlStr string
+	)
+
+	sqlStr = fmt.Sprintf("%d", hight)
+	sqlStr = "select hash, prevHash, merkleHash, stateHash, countTxs from blocks where hight = " + sqlStr
+	if err := cockroachDb.QueryRow(sqlStr).Scan(&hash, &prevHash, &merkleHash, &stateHash, &countTxs); nil != err {
+		return nil, err
+	}
+	return &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs}, nil
 }

@@ -17,14 +17,18 @@
 package data
 
 import (
-	"fmt"
-	"sync"
+	"time"
 
 	"github.com/ecoball/go-ecoball/common/elog"
+	"github.com/muesli/cache2go"
+)
+
+const (
+	BLOCK_SPAN time.Duration = 20
 )
 
 var (
-	Blocks = Block{BlocksInfo: make(map[int]BlockInfo)}
+	Blocks = cache2go.Cache("Blocks")
 	log    = elog.NewLogger("data", elog.DebugLog)
 )
 
@@ -36,30 +40,6 @@ type BlockInfo struct {
 	CountTxs   int
 }
 
-type Block struct {
-	BlocksInfo map[int]BlockInfo
-
-	sync.RWMutex
-}
-
-func (this *Block) Add(hight int, info *BlockInfo) {
-	this.Lock()
-	defer this.Unlock()
-
-	if _, ok := this.BlocksInfo[hight]; ok {
-		return
-	}
-	this.BlocksInfo[hight] = *info
-}
-
-func PrintBlock() string {
-	Blocks.RLock()
-	defer Blocks.RUnlock()
-
-	result := "hight\thash\tprevHash\tmerkleHash\tstateHash\tcountTxs\n"
-	for k, v := range Blocks.BlocksInfo {
-		result += fmt.Sprintf("%d\t%s\t%s\t%s\t%s\t%d\n", k, v.Hash, v.PrevHash, v.MerkleHash, v.StateHash, v.CountTxs)
-	}
-
-	return result
+func AddBlock(hight int, info *BlockInfo) {
+	Blocks.Add(hight, BLOCK_SPAN, *info)
 }

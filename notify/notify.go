@@ -52,7 +52,7 @@ func handleBlock(info []byte) error {
 		return err
 	}
 
-	data.Blocks.Add(int(oneBlock.Height), &data.BlockInfo{common.ToHex(oneBlock.Hash.Bytes()), common.ToHex(oneBlock.PrevHash.Bytes()),
+	data.AddBlock(int(oneBlock.Height), &data.BlockInfo{common.ToHex(oneBlock.Hash.Bytes()), common.ToHex(oneBlock.PrevHash.Bytes()),
 		common.ToHex(oneBlock.MerkleHash.Bytes()), common.ToHex(oneBlock.StateHash.Bytes()), int(oneBlock.CountTxs)})
 
 	//add transactions
@@ -62,7 +62,7 @@ func handleBlock(info []byte) error {
 			log.Fatal(err)
 			return err
 		}
-		data.Transactions.Add(common.ToHex(v.Hash.Bytes()), &data.TransactionInfo{int(v.Type), time.Unix(v.TimeStamp, 0).Format("2006-01-02 15:04:05"),
+		data.AddTransaction(common.ToHex(v.Hash.Bytes()), &data.TransactionInfo{int(v.Type), time.Unix(v.TimeStamp, 0).Format("2006-01-02 15:04:05"),
 			v.Permission, v.From.String(), v.Addr.String(), int(oneBlock.Height)})
 	}
 

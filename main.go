@@ -21,7 +21,6 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/ecoball/eballscan/data"
 	"github.com/ecoball/eballscan/onlooker"
 )
 
@@ -37,7 +36,7 @@ func (this *webserver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch path {
 	case "/":
 		t := template.Must(template.ParseFiles("./root.html"))
-		t.Execute(w, data.PrintBlock())
+		t.Execute(w, "blocks")
 	/*case "/tx":
 	t := template.Must(template.ParseFiles("./transaction.html"))
 	t.Execute(w, data.PrintTX())*/

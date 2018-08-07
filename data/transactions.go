@@ -17,11 +17,17 @@
 package data
 
 import (
-	"sync"
+	"time"
+
+	"github.com/muesli/cache2go"
+)
+
+const (
+	TRANSACTION_SPAN time.Duration = 20
 )
 
 var (
-	Transactions = Transaction{TxsInfo: make(map[string]TransactionInfo)}
+	Transactions = cache2go.Cache("Transactions")
 )
 
 type TransactionInfo struct {
@@ -33,18 +39,6 @@ type TransactionInfo struct {
 	BlockHight int
 }
 
-type Transaction struct {
-	TxsInfo map[string]TransactionInfo
-
-	sync.RWMutex
-}
-
-func (this *Transaction) Add(hash string, info *TransactionInfo) {
-	this.Lock()
-	defer this.Unlock()
-
-	if _, ok := this.TxsInfo[hash]; ok {
-		return
-	}
-	this.TxsInfo[hash] = *info
+func AddTransaction(hash string, info *TransactionInfo) {
+	Transactions.Add(hash, TRANSACTION_SPAN, *info)
 }
