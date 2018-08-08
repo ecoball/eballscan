@@ -22,9 +22,13 @@ import (
 	"github.com/ecoball/eballscan/data"
 	"github.com/ecoball/eballscan/database"
 	"github.com/ecoball/go-ecoball/common"
+	"github.com/ecoball/go-ecoball/common/elog"
 	"github.com/ecoball/go-ecoball/core/types"
 	"github.com/ecoball/go-ecoball/spectator/info"
-	"github.com/ontio/ontology/common/log"
+)
+
+var (
+	log = elog.NewLogger("notify", elog.DebugLog)
 )
 
 func Dispatch(one info.OneNotify) {
