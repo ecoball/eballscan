@@ -18,7 +18,6 @@ package database
 
 import (
 	"database/sql"
-	"os"
 
 	"github.com/ecoball/go-ecoball/common/elog"
 	_ "github.com/lib/pq"
@@ -31,7 +30,7 @@ var (
 
 func init() {
 	// Connect to the "blockchain" database.
-	var err error
+	/*var err error
 	cockroachDb, err = sql.Open("postgres", "postgresql://eballscan@localhost:26257/blockchain?sslmode=disable")
 	if err != nil {
 		log.Fatal("connecting to the database error: ", err)
@@ -50,5 +49,5 @@ func init() {
 	if err != nil {
 		log.Fatal("initialize transaction error: ", err)
 		os.Exit(1)
-	}
+	}*/
 }
