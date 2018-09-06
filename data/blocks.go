@@ -17,6 +17,8 @@
 package data
 
 import (
+	"encoding/json"
+	"sync"
 	"time"
 
 	"github.com/ecoball/go-ecoball/common/elog"
@@ -42,4 +44,56 @@ type BlockInfo struct {
 
 func AddBlock(hight int, info *BlockInfo) {
 	Blocks.Add(hight, BLOCK_SPAN, *info)
+
+}
+
+//新加内容
+var (
+	Blockss         = Block{BlocksInfo: make(map[int]BlockInfo)}
+	BlockInfoHArray []BlockInfoh
+)
+
+//新加内容：页面展示信息
+type BlockInfoh struct {
+	BlockInfo
+	Height int
+}
+
+//新加内容
+type Block struct {
+	BlocksInfo map[int]BlockInfo
+
+	sync.RWMutex
+}
+
+//原ADD函数
+func (this *Block) Add(hight int, info *BlockInfo) {
+	this.Lock()
+	defer this.Unlock()
+
+	if _, ok := this.BlocksInfo[hight]; ok {
+		return
+	}
+	this.BlocksInfo[hight] = *info
+}
+
+//新加内容
+func PrintBlock() string {
+	Blockss.RLock()
+	defer Blockss.RUnlock()
+	for k, v := range Blockss.BlocksInfo {
+		One := BlockInfoh{}
+		One.Height = k
+		One.Hash = v.Hash
+		One.PrevHash = v.PrevHash
+		One.MerkleHash = v.MerkleHash
+		One.StateHash = v.StateHash
+		One.CountTxs = v.CountTxs
+		BlockInfoHArray = append(BlockInfoHArray, One)
+
+	}
+	buf, _ := json.Marshal(BlockInfoHArray)
+	result := string(buf)
+	return result
+
 }

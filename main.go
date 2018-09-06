@@ -17,40 +17,39 @@
 package main
 
 import (
-	"errors"
-	"html/template"
-	"net/http"
-
+	"github.com/ecoball/eballscan/data"
 	"github.com/ecoball/eballscan/onlooker"
+	"github.com/kataras/iris"
 )
-
-type WebHandle func(w http.ResponseWriter, r *http.Request)
-
-type webserver struct {
-	url2handle map[string]WebHandle
-}
-
-func (this *webserver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var err error = nil
-	path := r.URL.String()
-	switch path {
-	case "/":
-		t := template.Must(template.ParseFiles("./root.html"))
-		t.Execute(w, "blocks")
-	/*case "/tx":
-	t := template.Must(template.ParseFiles("./transaction.html"))
-	t.Execute(w, data.PrintTX())*/
-
-	default:
-		err = errors.New("unrecognized transaction type")
-	}
-
-	if err != nil {
-		http.Error(w, "error 500: "+err.Error(), http.StatusInternalServerError)
-	}
-}
 
 func main() {
 	go onlooker.Bystander()
-	http.ListenAndServe(":8080", &webserver{})
+	app := iris.New()
+
+	app.OnErrorCode(iris.StatusInternalServerError, func(ctx iris.Context) {
+
+		errMessage := ctx.Values().GetString("error")
+		if errMessage != "" {
+			ctx.Writef("Internal server error: %s", errMessage)
+			return
+		}
+
+		ctx.Writef("(Unexpected) internal server error")
+	})
+
+	app.Use(func(ctx iris.Context) {
+		ctx.Application().Logger().Infof("Begin request for path: %s", ctx.Path())
+		ctx.Next()
+	})
+	app.Get("/b", func(ctx iris.Context) {
+		ctx.HTML(data.PrintBlock())
+
+	})
+	app.Get("/t", func(ctx iris.Context) {
+
+		ctx.HTML(data.PrintTransaction())
+
+	})
+
+	app.Run(iris.Addr(":8080"), iris.WithCharset("UTF-8"), iris.WithoutVersionChecker)
 }

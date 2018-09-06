@@ -17,6 +17,8 @@
 package data
 
 import (
+	"encoding/json"
+	"sync"
 	"time"
 
 	"github.com/muesli/cache2go"
@@ -41,4 +43,55 @@ type TransactionInfo struct {
 
 func AddTransaction(hash string, info *TransactionInfo) {
 	Transactions.Add(hash, TRANSACTION_SPAN, *info)
+}
+
+//新加内容
+var (
+	Transactionss         = Transaction{TxsInfo: make(map[string]TransactionInfo)}
+	TransactionInfoHArray []TransactionInfoH
+)
+
+//新加内容
+type TransactionInfoH struct {
+	TransactionInfo
+	Hash string
+}
+
+//新加内容
+type Transaction struct {
+	TxsInfo map[string]TransactionInfo
+
+	sync.RWMutex
+}
+
+//新加内容
+func PrintTransaction() string {
+	Transactionss.RLock()
+	defer Transactions.RUnlock()
+	for k, v := range Transactionss.TxsInfo {
+		One := TransactionInfoH{}
+		One.Hash = k
+		One.TxType = v.TxType
+		One.TimeStamp = v.TimeStamp
+		One.Permission = v.Permission
+		One.TxFrom = v.TxFrom
+		One.Address = v.Address
+		One.BlockHight = v.BlockHight
+		TransactionInfoHArray = append(TransactionInfoHArray, One)
+	}
+	buf, _ := json.Marshal(TransactionInfoHArray)
+	result := string(buf)
+	return result
+
+}
+
+//原
+func (this *Transaction) Add(hash string, info *TransactionInfo) {
+	this.Lock()
+	defer this.Unlock()
+
+	if _, ok := this.TxsInfo[hash]; ok {
+		return
+	}
+	this.TxsInfo[hash] = *info
 }
