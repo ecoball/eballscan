@@ -1,0 +1,19 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "ZcF4G48d1VB66batcy8ldA94ZLE=",
+			"path": "github.com/kataras/iris",
+			"revision": "b1670413ba6a7532e46c12ff23d0914c270d2768",
+			"revisionTime": "2018-09-01T16:27:21Z"
+		},
+		{
+			"checksumSHA1": "9p3UGOPJ3Ms3nVG3BRtotWVgKq4=",
+			"path": "github.com/muesli/cache2go",
+			"revision": "5a1839810579c34bbb4f8232e6554a5b61daeb74",
+			"revisionTime": "2018-04-19T20:27:30Z"
+		}
+	],
+	"rootPath": "github.com/ecoball/eballscan"
+}
