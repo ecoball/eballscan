@@ -8,12 +8,6 @@ import (
 
 var reIdentifiers = regexp.MustCompile("^[a-zA-Z0-9_]+$")
 
-var autoescape = true
-
-func SetAutoescape(newValue bool) {
-	autoescape = newValue
-}
-
 // A Context type provides constants, variables, instances or functions to a template.
 //
 // pongo2 automatically provides meta-information or functions through the "pongo2"-key.
@@ -86,7 +80,7 @@ func newExecutionContext(tpl *Template, ctx Context) *ExecutionContext {
 
 		Public:     ctx,
 		Private:    privateCtx,
-		Autoescape: autoescape,
+		Autoescape: true,
 	}
 }
 

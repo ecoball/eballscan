@@ -4,16 +4,35 @@
 package errors
 
 import (
-	"fmt"
-	"go/build"
-	"os"
-	"path/filepath"
+	"runtime"
 	"strings"
 )
 
-var goPath = build.Default.GOPATH
-var srcDir = filepath.Join(goPath, "src")
+// prefixSize is used internally to trim the user specific path from the
+// front of the returned filenames from the runtime call stack.
+var prefixSize int
+
+// goPath is the deduced path based on the location of this file as compiled.
+var goPath string
+
+func init() {
+	_, file, _, ok := runtime.Caller(0)
+	if file == "?" {
+		return
+	}
+	if ok {
+		// We know that the end of the file should be:
+		// github.com/juju/errors/path.go
+		size := len(file)
+		suffix := len("github.com/juju/errors/path.go")
+		goPath = file[:size-suffix]
+		prefixSize = len(goPath)
+	}
+}
 
 func trimGoPath(filename string) string {
-	return strings.TrimPrefix(filename, fmt.Sprintf("%s%s", srcDir, string(os.PathSeparator)))
+	if strings.HasPrefix(filename, goPath) {
+		return filename[prefixSize:]
+	}
+	return filename
 }

@@ -83,7 +83,7 @@ func isZero(v reflect.Value) bool {
 		// then it shows "Sorry, your reply was invalid: Value is required"
 		// and it stucks there.
 		// This happens because 'false' is the zero value of a "bool" type.
-	case reflect.Bool: // another solution is just not to use the Required inside Confirms.
+	case reflect.Bool:
 		return false
 	}
 

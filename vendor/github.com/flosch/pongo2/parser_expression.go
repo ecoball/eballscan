@@ -136,27 +136,15 @@ func (expr *Expression) Evaluate(ctx *ExecutionContext) (*Value, *Error) {
 		return nil, err
 	}
 	if expr.expr2 != nil {
+		v2, err := expr.expr2.Evaluate(ctx)
+		if err != nil {
+			return nil, err
+		}
 		switch expr.opToken.Val {
 		case "and", "&&":
-			if !v1.IsTrue() {
-				return AsValue(false), nil
-			} else {
-				v2, err := expr.expr2.Evaluate(ctx)
-				if err != nil {
-					return nil, err
-				}
-				return AsValue(v2.IsTrue()), nil
-			}
+			return AsValue(v1.IsTrue() && v2.IsTrue()), nil
 		case "or", "||":
-			if v1.IsTrue() {
-				return AsValue(true), nil
-			} else {
-				v2, err := expr.expr2.Evaluate(ctx)
-				if err != nil {
-					return nil, err
-				}
-				return AsValue(v2.IsTrue()), nil
-			}
+			return AsValue(v1.IsTrue() || v2.IsTrue()), nil
 		default:
 			return nil, ctx.Error(fmt.Sprintf("unimplemented: %s", expr.opToken.Val), expr.opToken)
 		}
