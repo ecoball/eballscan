@@ -57,6 +57,12 @@
 			"revisionTime": "2018-08-06T06:07:27Z"
 		},
 		{
+			"checksumSHA1": "m8I0grXI9ucm5awJzqADWBLWr0c=",
+			"path": "github.com/juju/errors",
+			"revision": "22422dad46e14561a0854ad42497a75af9b61909",
+			"revisionTime": "2018-08-06T07:45:54Z"
+		},
+		{
 			"checksumSHA1": "wd3qD6vbSukJHuD02H9XywkVy9w=",
 			"path": "github.com/kataras/golog",
 			"revision": "03be101463868edc5a81f094fc68a5f6c1b5503a",
@@ -71,6 +77,12 @@
 		{
 			"checksumSHA1": "Bm0qvlIK4oSun+6c9HUAx6J4AFk=",
 			"path": "github.com/kataras/iris/cache",
+			"revision": "b1670413ba6a7532e46c12ff23d0914c270d2768",
+			"revisionTime": "2018-09-01T16:27:21Z"
+		},
+		{
+			"checksumSHA1": "Z/c4QG25XmzGL8J8gFQHUDPh0WU=",
+			"path": "github.com/kataras/iris/cache/client",
 			"revision": "b1670413ba6a7532e46c12ff23d0914c270d2768",
 			"revisionTime": "2018-09-01T16:27:21Z"
 		},
@@ -105,6 +117,18 @@
 			"revisionTime": "2018-09-01T16:27:21Z"
 		},
 		{
+			"checksumSHA1": "V1fU2yegjRgRaq5yEPxxWkwZB+A=",
+			"path": "github.com/kataras/iris/core/maintenance/version",
+			"revision": "b1670413ba6a7532e46c12ff23d0914c270d2768",
+			"revisionTime": "2018-09-01T16:27:21Z"
+		},
+		{
+			"checksumSHA1": "QdDfZu0BbueV57wjRSG9Hujxqk0=",
+			"path": "github.com/kataras/iris/core/memstore",
+			"revision": "b1670413ba6a7532e46c12ff23d0914c270d2768",
+			"revisionTime": "2018-09-01T16:27:21Z"
+		},
+		{
 			"checksumSHA1": "NgLWwh4y8rxLfJWTFmOpp5qaeyY=",
 			"path": "github.com/kataras/iris/core/netutil",
 			"revision": "b1670413ba6a7532e46c12ff23d0914c270d2768",
@@ -113,6 +137,18 @@
 		{
 			"checksumSHA1": "CkYn5pb15RqSbIOXe7w3/PI2NIQ=",
 			"path": "github.com/kataras/iris/core/router",
+			"revision": "b1670413ba6a7532e46c12ff23d0914c270d2768",
+			"revisionTime": "2018-09-01T16:27:21Z"
+		},
+		{
+			"checksumSHA1": "56LUBStzZU2/Quqi4rwXcYDYU8Q=",
+			"path": "github.com/kataras/iris/core/router/macro",
+			"revision": "b1670413ba6a7532e46c12ff23d0914c270d2768",
+			"revisionTime": "2018-09-01T16:27:21Z"
+		},
+		{
+			"checksumSHA1": "W/qaft8KLMXhcOzZytlp4JcWuik=",
+			"path": "github.com/kataras/iris/core/router/macro/interpreter/ast",
 			"revision": "b1670413ba6a7532e46c12ff23d0914c270d2768",
 			"revisionTime": "2018-09-01T16:27:21Z"
 		},
