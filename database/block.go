@@ -61,6 +61,7 @@ func initBlock() (err error) {
 
 		if hight > MaxHight {
 			MaxHight = hight
+			data.Length = hight
 		}
 	}
 
@@ -76,7 +77,7 @@ func initBlock() (err error) {
 			return nil
 		}
 
-		item := cache2go.NewCacheItem(hight, data.BLOCK_SPAN, *val)
+		item := cache2go.NewCacheItem(hight, data.BLOCK_SPAN, val)
 		return item
 	})
 

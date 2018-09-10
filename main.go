@@ -42,7 +42,9 @@ func main() {
 		ctx.Next()
 	})
 	app.Get("/b", func(ctx iris.Context) {
+	
 		ctx.HTML(data.PrintBlock())
+	
 
 	})
 	app.Get("/t", func(ctx iris.Context) {
