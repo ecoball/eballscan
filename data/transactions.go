@@ -17,19 +17,21 @@
 package data
 
 import (
-	"encoding/json"
-	"sync"
 	"time"
-
+	"encoding/json"
+	"fmt"
 	"github.com/muesli/cache2go"
+
 )
 
 const (
-	TRANSACTION_SPAN time.Duration = 20 * time.Second
+	TRANSACTION_SPAN time.Duration = 10 * time.Second
 )
 
 var (
 	Transactions = cache2go.Cache("Transactions")
+
+	THashArray         []string
 )
 
 type TransactionInfo struct {
@@ -40,58 +42,38 @@ type TransactionInfo struct {
 	Address    string
 	BlockHight int
 }
-
-func AddTransaction(hash string, info *TransactionInfo) {
-	Transactions.Add(hash, TRANSACTION_SPAN, *info)
-}
-
-//新加内容
-var (
-	Transactionss         = Transaction{TxsInfo: make(map[string]TransactionInfo)}
-	TransactionInfoHArray []TransactionInfoH
-)
-
-//新加内容
 type TransactionInfoH struct {
 	TransactionInfo
 	Hash string
 }
 
-//新加内容
-type Transaction struct {
-	TxsInfo map[string]TransactionInfo
-
-	sync.RWMutex
+func AddTransaction(hash string, info *TransactionInfo) {
+	Transactions.Add(hash, TRANSACTION_SPAN, *info)
 }
-
-//新加内容
 func PrintTransaction() string {
-	Transactionss.RLock()
+	Transactions.RLock()
 	defer Transactions.RUnlock()
-	for k, v := range Transactionss.TxsInfo {
+	var TransactionInfoHArray []TransactionInfoH
+	for _, hash := range THashArray {
+
+		res, err := Transactions.Value(hash)
+
+		if err == nil {
 		One := TransactionInfoH{}
-		One.Hash = k
-		One.TxType = v.TxType
-		One.TimeStamp = v.TimeStamp
-		One.Permission = v.Permission
-		One.TxFrom = v.TxFrom
-		One.Address = v.Address
-		One.BlockHight = v.BlockHight
+		One.Hash = hash
+		One.TxType = res.Data().(*TransactionInfo).TxType
+		One.TimeStamp = res.Data().(*TransactionInfo).TimeStamp
+		One.Permission = res.Data().(*TransactionInfo).Permission
+		One.TxFrom = res.Data().(*TransactionInfo).TxFrom
+		One.Address = res.Data().(*TransactionInfo).Address
+		One.BlockHight = res.Data().(*TransactionInfo).BlockHight
 		TransactionInfoHArray = append(TransactionInfoHArray, One)
+		} else {
+			fmt.Println("Error retrieving value from cache:", err)
+		}
 	}
 	buf, _ := json.Marshal(TransactionInfoHArray)
 	result := string(buf)
 	return result
 
-}
-
-//原
-func (this *Transaction) Add(hash string, info *TransactionInfo) {
-	this.Lock()
-	defer this.Unlock()
-
-	if _, ok := this.TxsInfo[hash]; ok {
-		return
-	}
-	this.TxsInfo[hash] = *info
 }

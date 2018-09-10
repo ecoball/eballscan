@@ -18,7 +18,7 @@ package data
 
 import (
 	"encoding/json"
-	"sync"
+	"fmt"
 	"time"
 
 	"github.com/ecoball/go-ecoball/common/elog"
@@ -26,12 +26,14 @@ import (
 )
 
 const (
-	BLOCK_SPAN time.Duration = 20 * time.Second
+	BLOCK_SPAN time.Duration = 10 * time.Second
 )
 
 var (
-	Blocks = cache2go.Cache("Blocks")
-	log    = elog.NewLogger("data", elog.DebugLog)
+	Blocks          = cache2go.Cache("Blocks")
+	log             = elog.NewLogger("data", elog.DebugLog)
+	
+	Length          int
 )
 
 type BlockInfo struct {
@@ -41,59 +43,42 @@ type BlockInfo struct {
 	StateHash  string
 	CountTxs   int
 }
-
-func AddBlock(hight int, info *BlockInfo) {
-	Blocks.Add(hight, BLOCK_SPAN, *info)
-
-}
-
-//新加内容
-var (
-	Blockss         = Block{BlocksInfo: make(map[int]BlockInfo)}
-	BlockInfoHArray []BlockInfoh
-)
-
-//新加内容：页面展示信息
 type BlockInfoh struct {
 	BlockInfo
 	Height int
 }
 
-//新加内容
-type Block struct {
-	BlocksInfo map[int]BlockInfo
 
-	sync.RWMutex
+func AddBlock(hight int, info *BlockInfo) {
+	Blocks.Add(hight, BLOCK_SPAN, info)
+
 }
-
-//原ADD函数
-func (this *Block) Add(hight int, info *BlockInfo) {
-	this.Lock()
-	defer this.Unlock()
-
-	if _, ok := this.BlocksInfo[hight]; ok {
-		return
-	}
-	this.BlocksInfo[hight] = *info
-}
-
-//新加内容
 func PrintBlock() string {
-	Blockss.RLock()
-	defer Blockss.RUnlock()
-	for k, v := range Blockss.BlocksInfo {
-		One := BlockInfoh{}
-		One.Height = k
-		One.Hash = v.Hash
-		One.PrevHash = v.PrevHash
-		One.MerkleHash = v.MerkleHash
-		One.StateHash = v.StateHash
-		One.CountTxs = v.CountTxs
-		BlockInfoHArray = append(BlockInfoHArray, One)
+	Blocks.RLock()
+	defer Blocks.RUnlock()
 
+	var BlockInfoHArray []BlockInfoh
+
+	for i := 1; i <= Length; i++ {
+		res, err := Blocks.Value(i)
+
+		if err == nil {
+			One := BlockInfoh{}
+			One.Height = i
+			One.Hash = res.Data().(*BlockInfo).Hash
+			One.PrevHash = res.Data().(*BlockInfo).PrevHash
+			One.MerkleHash = res.Data().(*BlockInfo).MerkleHash
+			One.StateHash = res.Data().(*BlockInfo).StateHash
+			One.CountTxs = res.Data().(*BlockInfo).CountTxs
+			BlockInfoHArray = append(BlockInfoHArray, One)
+		} else {
+			fmt.Println("Error retrieving value from cache:", err)
+		}
 	}
 	buf, _ := json.Marshal(BlockInfoHArray)
 	result := string(buf)
 	return result
 
 }
+
+

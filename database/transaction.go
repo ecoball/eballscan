@@ -54,7 +54,7 @@ func initTransaction() (err error) {
 			log.Fatal(err)
 			break
 		}
-
+		data.THashArray  =append(data.THashArray , hash)
 		data.AddTransaction(hash, &data.TransactionInfo{txType, time.Unix(int64(timeStamp), 0).Format("2006-01-02 15:04:05"), permission, txFrom, address, blockHight})
 	}
 
