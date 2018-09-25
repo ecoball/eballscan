@@ -20,10 +20,12 @@ import (
 	"github.com/ecoball/eballscan/data"
 	"github.com/ecoball/eballscan/onlooker"
 	"github.com/kataras/iris"
+	"github.com/ecoball/eballscan/http"
 )
 
 func main() {
 	go onlooker.Bystander()
+	go http.StartHttpServer()
 	app := iris.New()
 
 	app.OnErrorCode(iris.StatusInternalServerError, func(ctx iris.Context) {

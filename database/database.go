@@ -31,7 +31,7 @@ var (
 func init() {
 	// Connect to the "blockchain" database.
 	var err error
-	cockroachDb, err = sql.Open("postgres", "postgresql://eballscan@localhost:26257/blockchain?sslmode=disable")
+	cockroachDb, err = sql.Open("postgres", "postgresql://root@localhost:26257/blockchain?sslmode=disable")
 	if err != nil {
 		log.Fatal("connecting to the database error: ", err)
 		os.Exit(1)

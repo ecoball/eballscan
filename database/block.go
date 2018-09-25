@@ -72,7 +72,7 @@ func initBlock() (err error) {
 			return nil
 		}
 
-		val, err := queryOneBlock(hight)
+		val, err := QueryOneBlock(hight)
 		if nil != err {
 			return nil
 		}
@@ -96,7 +96,7 @@ func AddBlock(hight, countTxs int, hash, prevHash, merkleHash, stateHash string)
 	return
 }
 
-func queryOneBlock(hight int) (*data.BlockInfo, error) {
+func QueryOneBlock(hight int) (*data.BlockInfo, error) {
 	var (
 		countTxs                                      int
 		hash, prevHash, merkleHash, stateHash, sqlStr string

@@ -65,7 +65,7 @@ func initTransaction() (err error) {
 			return nil
 		}
 
-		val, err := queryOneTransaction(hash)
+		val, err := QueryOneTransaction(hash)
 		if nil != err {
 			return nil
 		}
@@ -89,13 +89,13 @@ func AddTransaction(txType, timeStamp, blockHight int, hash, permission, txFrom,
 	return
 }
 
-func queryOneTransaction(hash string) (*data.TransactionInfo, error) {
+func QueryOneTransaction(hash string) (*data.TransactionInfo, error) {
 	var (
 		txType, timeStamp, blockHight       int
 		permission, txFrom, address, sqlStr string
 	)
 
-	sqlStr = "select txType, timeStamp, permission, txFrom, address, blockHight from transactions where hash = " + hash
+	sqlStr = "select txType, timeStamp, permission, txFrom, address, blockHight from transactions where hash = '" + hash + "'"
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&txType, &timeStamp, &permission, &txFrom, &address, &blockHight); nil != err {
 		return nil, err
 	}

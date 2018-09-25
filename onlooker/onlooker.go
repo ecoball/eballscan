@@ -34,7 +34,7 @@ var (
 func Bystander() {
 	//Connect to server node
 	var err error
-	Conn, err = net.Dial("tcp", "127.0.0.1:9000")
+	Conn, err = net.Dial("tcp", "127.0.0.1:20678")
 	if err != nil {
 		log.Error("explorer server net.Dial error: ", err)
 		os.Exit(1)
