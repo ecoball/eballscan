@@ -19,6 +19,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/ecoball/eballscan/data"
 	"github.com/muesli/cache2go"
@@ -31,15 +32,21 @@ var (
 func initBlock() (err error) {
 	// Create the "blocks" table.
 	if _, err = cockroachDb.Exec(
-		`create table if not exists blocks (hight int primary key, 
+		`create table if not exists blocks (hight int primary key, timestamp int, numTransaction int,
 			hash varchar(70), prevHash varchar(70), merkleHash varchar(70), stateHash varchar(70), countTxs int)`); err != nil {
 		log.Fatal(err)
 		return
 	}
 
+	/*if _, err = cockroachDb.Exec(
+		`drop table if exists blocks`); err != nil {
+		log.Fatal(err)
+		return
+	}*/
+
 	//Load the data of blocks into the cache
 	var rows *sql.Rows
-	rows, err = cockroachDb.Query("select hight, hash, prevHash, merkleHash, stateHash, countTxs from blocks")
+	rows, err = cockroachDb.Query("select hight, timestamp, numTransaction, hash, prevHash, merkleHash, stateHash, countTxs from blocks")
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -48,16 +55,17 @@ func initBlock() (err error) {
 
 	for rows.Next() {
 		var (
-			hight, countTxs                       int
+			hight, countTxs, numTransaction       int
 			hash, prevHash, merkleHash, stateHash string
+			timestamp int
 		)
 
-		if err = rows.Scan(&hight, &hash, &prevHash, &merkleHash, &stateHash, &countTxs); err != nil {
+		if err = rows.Scan(&hight, &timestamp, &numTransaction, &hash, &prevHash, &merkleHash, &stateHash, &countTxs); err != nil {
 			log.Fatal(err)
 			break
 		}
 
-		data.AddBlock(hight, &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs})
+		data.AddBlock(hight, &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction})
 
 		if hight > MaxHight {
 			MaxHight = hight

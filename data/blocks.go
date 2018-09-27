@@ -42,6 +42,8 @@ type BlockInfo struct {
 	MerkleHash string
 	StateHash  string
 	CountTxs   int
+	Timestamp  int 
+	NumTransaction int
 }
 type BlockInfoh struct {
 	BlockInfo

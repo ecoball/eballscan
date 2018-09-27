@@ -29,11 +29,17 @@ func initTransaction() (err error) {
 	// Create the "transactions" table.
 	if _, err = cockroachDb.Exec(
 		`create table if not exists transactions(hash varchar(70) primary key, 
-		txType int, timeStamp int, permission varchar(32), txFrom varchar(32), address varchar(32), blockHight int,
+		txType int, timestamp int, permission varchar(32), txFrom varchar(32), address varchar(32), blockHight int,
 		foreign key(blockHight) references blocks(hight))`); err != nil {
 		log.Fatal(err)
 		return
 	}
+
+	/*if _, err = cockroachDb.Exec(
+		`drop table if exists transactions`); err != nil {
+		log.Fatal(err)
+		return
+	}*/
 
 	//Load the data of transactions into the cache
 	var rows *sql.Rows
