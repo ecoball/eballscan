@@ -19,7 +19,6 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"time"
 
 	"github.com/ecoball/eballscan/data"
 	"github.com/muesli/cache2go"
@@ -32,7 +31,7 @@ var (
 func initBlock() (err error) {
 	// Create the "blocks" table.
 	if _, err = cockroachDb.Exec(
-		`create table if not exists blocks (hight int primary key, timestamp int, numTransaction int,
+		`create table if not exists blocks (hight int primary key, timeStamp int, numTransaction int,
 			hash varchar(70), prevHash varchar(70), merkleHash varchar(70), stateHash varchar(70), countTxs int)`); err != nil {
 		log.Fatal(err)
 		return
@@ -46,7 +45,7 @@ func initBlock() (err error) {
 
 	//Load the data of blocks into the cache
 	var rows *sql.Rows
-	rows, err = cockroachDb.Query("select hight, timestamp, numTransaction, hash, prevHash, merkleHash, stateHash, countTxs from blocks")
+	rows, err = cockroachDb.Query("select hight, timeStamp, numTransaction, hash, prevHash, merkleHash, stateHash, countTxs from blocks")
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -92,10 +91,10 @@ func initBlock() (err error) {
 	return
 }
 
-func AddBlock(hight, countTxs int, hash, prevHash, merkleHash, stateHash string) (err error) {
+func AddBlock(hight, countTxs, Timestamp, NumTransaction int, hash, prevHash, merkleHash, stateHash string) (err error) {
 	var values string
-	values = fmt.Sprintf(`(%d, '%s', '%s', '%s', '%s', %d)`, hight, hash, prevHash, merkleHash, stateHash, countTxs)
-	values = "insert into blocks(hight, hash, prevHash, merkleHash, stateHash, countTxs) values" + values
+	values = fmt.Sprintf(`(%d, %d, %d, '%s', '%s', '%s', '%s', %d)`, hight, Timestamp, NumTransaction, hash, prevHash, merkleHash, stateHash, countTxs)
+	values = "insert into blocks(hight, timeStamp, numTransaction, hash, prevHash, merkleHash, stateHash, countTxs) values" + values
 	_, err = cockroachDb.Exec(values)
 	if nil != err {
 		log.Fatal(err)
@@ -106,14 +105,14 @@ func AddBlock(hight, countTxs int, hash, prevHash, merkleHash, stateHash string)
 
 func QueryOneBlock(hight int) (*data.BlockInfo, error) {
 	var (
-		countTxs                                      int
+		countTxs, numTransaction, timestamp           int
 		hash, prevHash, merkleHash, stateHash, sqlStr string
 	)
 
 	sqlStr = fmt.Sprintf("%d", hight)
-	sqlStr = "select hash, prevHash, merkleHash, stateHash, countTxs from blocks where hight = " + sqlStr
-	if err := cockroachDb.QueryRow(sqlStr).Scan(&hash, &prevHash, &merkleHash, &stateHash, &countTxs); nil != err {
+	sqlStr = "select timeStamp, numTransaction, hash, prevHash, merkleHash, stateHash, countTxs from blocks where hight = " + sqlStr
+	if err := cockroachDb.QueryRow(sqlStr).Scan(&timestamp, &numTransaction, &hash, &prevHash, &merkleHash, &stateHash, &countTxs); nil != err {
 		return nil, err
 	}
-	return &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs}, nil
+	return &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction}, nil
 }

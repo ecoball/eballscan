@@ -49,12 +49,25 @@ func getBlock(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"CountTxs": info.CountTxs, "StateHash": info.StateHash, "hash": info.Hash, "MerkleHash": info.MerkleHash, "PrevHash": info.PrevHash})
+	c.JSON(http.StatusOK, gin.H{"CountTxs": info.CountTxs, "StateHash": info.StateHash, "hash": info.Hash, "MerkleHash": info.MerkleHash, "PrevHash": info.PrevHash,
+			"timeStamp": info.Timestamp, "numTransaction": info.NumTransaction})
 }
 
 func addBlock(c *gin.Context) {
 	height_str := c.PostForm("height")
 	height, err := strconv.Atoi(height_str)
+	if nil != err{
+		panic(err) 
+	}
+
+	time_str := c.PostForm("timeStamp")
+	timeStamp, err := strconv.Atoi(time_str)
+	if nil != err{
+		panic(err) 
+	}
+
+	numTransaction_str := c.PostForm("numTransaction")
+	numTransaction, err := strconv.Atoi(numTransaction_str)
 	if nil != err{
 		panic(err) 
 	}
@@ -69,7 +82,7 @@ func addBlock(c *gin.Context) {
 	prevHash := c.PostForm("prevHash")
 	merkleHash := c.PostForm("merkleHash")
 	stateHash := c.PostForm("stateHash")
-	errcode := database.AddBlock(height, countTxs, hash, prevHash, merkleHash, stateHash)
+	errcode := database.AddBlock(height, countTxs, timeStamp, numTransaction, hash, prevHash, merkleHash, stateHash)
 	if nil != errcode{
 		c.JSON(http.StatusBadRequest, gin.H{"result": errcode.Error()})
 	}
