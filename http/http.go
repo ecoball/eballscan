@@ -17,6 +17,7 @@
 package http
 
 import (
+	"github.com/ecoball/eballscan/data"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,6 +30,7 @@ func StartHttpServer() (err error) {
 	router := gin.Default()
 
 	//register handle
+	router.GET("/eballscan/getBlock", getBlock)
 	router.POST("/eballscan/getBlockByHeight", getBlockByHeight)
 	router.POST("/eballscan/add_block", addBlock)
 	router.POST("/eballscan/get_transaction", getTransaction)
@@ -39,7 +41,7 @@ func StartHttpServer() (err error) {
 }
 
 func getBlockByHeight(c *gin.Context) {
-	height_str := c.PostForm("height")
+	height_str := c.PostForm("hight")
 	height, err := strconv.Atoi(height_str)
 	if nil != err{
 		panic(err) 
@@ -53,9 +55,23 @@ func getBlockByHeight(c *gin.Context) {
 			"timeStamp": info.Timestamp, "numTransaction": info.NumTransaction})
 }
 
+func getBlock(c *gin.Context) {
+	info, err := database.QueryBlock()
+	if nil != err{
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+	}
+
+	datas := []data.BlockInfoh{}
+	for _, v := range info {
+		datas = append(datas, *v)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"blocks info": datas})
+}
+
 func addBlock(c *gin.Context) {
-	height_str := c.PostForm("height")
-	height, err := strconv.Atoi(height_str)
+	hight_str := c.PostForm("hight")
+	hight, err := strconv.Atoi(hight_str)
 	if nil != err{
 		panic(err) 
 	}
@@ -82,7 +98,7 @@ func addBlock(c *gin.Context) {
 	prevHash := c.PostForm("prevHash")
 	merkleHash := c.PostForm("merkleHash")
 	stateHash := c.PostForm("stateHash")
-	errcode := database.AddBlock(height, countTxs, timeStamp, numTransaction, hash, prevHash, merkleHash, stateHash)
+	errcode := database.AddBlock(hight, countTxs, timeStamp, numTransaction, hash, prevHash, merkleHash, stateHash)
 	if nil != errcode{
 		c.JSON(http.StatusBadRequest, gin.H{"result": errcode.Error()})
 	}
