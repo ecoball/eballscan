@@ -29,7 +29,7 @@ func StartHttpServer() (err error) {
 	router := gin.Default()
 
 	//register handle
-	router.POST("/eballscan/get_block", getBlock)
+	router.POST("/eballscan/getBlockByHeight", getBlockByHeight)
 	router.POST("/eballscan/add_block", addBlock)
 	router.POST("/eballscan/get_transaction", getTransaction)
 	router.POST("/eballscan/add_transaction", addTransaction)
@@ -38,7 +38,7 @@ func StartHttpServer() (err error) {
 	return nil
 }
 
-func getBlock(c *gin.Context) {
+func getBlockByHeight(c *gin.Context) {
 	height_str := c.PostForm("height")
 	height, err := strconv.Atoi(height_str)
 	if nil != err{

@@ -72,6 +72,8 @@ func PrintBlock() string {
 			One.MerkleHash = res.Data().(*BlockInfo).MerkleHash
 			One.StateHash = res.Data().(*BlockInfo).StateHash
 			One.CountTxs = res.Data().(*BlockInfo).CountTxs
+			One.Timestamp = res.Data().(*BlockInfo).Timestamp
+			One.NumTransaction = res.Data().(*BlockInfo).NumTransaction
 			BlockInfoHArray = append(BlockInfoHArray, One)
 		} else {
 			fmt.Println("Error retrieving value from cache:", err)
