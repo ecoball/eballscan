@@ -19,6 +19,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"github.com/ecoball/eballscan/data"
 	"github.com/muesli/cache2go"
@@ -26,12 +27,13 @@ import (
 
 var (
 	MaxHight int
+	curr_max_hight int
 )
 
 func initBlock() (err error) {
 	// Create the "blocks" table.
 	if _, err = cockroachDb.Exec(
-		`create table if not exists blocks (hight int primary key, timeStamp int, numTransaction int,
+		`create table if not exists blocks (hight int primary key, timeStamp int,
 			hash varchar(70), prevHash varchar(70), merkleHash varchar(70), stateHash varchar(70), countTxs int)`); err != nil {
 		log.Fatal(err)
 		return
@@ -43,9 +45,21 @@ func initBlock() (err error) {
 		return
 	}*/
 
+	/*if _, err = cockroachDb.Exec(
+		`create sequence if not exists blocks_id_seq   
+		minvalue 1  
+		maxvalue 9223372036854775807  
+		start 1  
+		increment 1  
+		cache 1;
+		`); err != nil {
+		log.Fatal(err)
+		return
+	}*/
+
 	//Load the data of blocks into the cache
 	var rows *sql.Rows
-	rows, err = cockroachDb.Query("select hight, timeStamp, numTransaction, hash, prevHash, merkleHash, stateHash, countTxs from blocks")
+	rows, err = cockroachDb.Query("select hight, timeStamp, hash, prevHash, merkleHash, stateHash, countTxs from blocks")
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -54,17 +68,16 @@ func initBlock() (err error) {
 
 	for rows.Next() {
 		var (
-			hight, countTxs, numTransaction       int
+			hight, countTxs, timestamp       int
 			hash, prevHash, merkleHash, stateHash string
-			timestamp int
 		)
 
-		if err = rows.Scan(&hight, &timestamp, &numTransaction, &hash, &prevHash, &merkleHash, &stateHash, &countTxs); err != nil {
+		if err = rows.Scan(&hight, &timestamp, &hash, &prevHash, &merkleHash, &stateHash, &countTxs); err != nil {
 			log.Fatal(err)
 			break
 		}
 
-		data.AddBlock(hight, &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction})
+		data.AddBlock(hight, &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp})
 
 		if hight > MaxHight {
 			MaxHight = hight
@@ -91,16 +104,16 @@ func initBlock() (err error) {
 	return
 }
 
-func AddBlock(hight, countTxs, timestamp, numTransaction int, hash, prevHash, merkleHash, stateHash string) (err error) {
+func AddBlock(hight, countTxs, timestamp int, hash, prevHash, merkleHash, stateHash string) (err error) {
 	var values string
-	values = fmt.Sprintf(`(%d, %d, %d, '%s', '%s', '%s', '%s', %d)`, hight, timestamp, numTransaction, hash, prevHash, merkleHash, stateHash, countTxs)
-	values = "insert into blocks(hight, timeStamp, numTransaction, hash, prevHash, merkleHash, stateHash, countTxs) values" + values
+	values = fmt.Sprintf(`(%d, %d, '%s', '%s', '%s', '%s', %d)`, hight, timestamp, hash, prevHash, merkleHash, stateHash, countTxs)
+	values = "insert into blocks(hight, timeStamp, hash, prevHash, merkleHash, stateHash, countTxs) values" + values
 	_, err = cockroachDb.Exec(values)
 	if nil != err {
 		log.Fatal(err)
 	}
 
-	data.AddBlock(hight, &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction})
+	data.AddBlock(hight, &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp})
 
 	if hight > MaxHight {
 		MaxHight = hight
@@ -112,45 +125,62 @@ func AddBlock(hight, countTxs, timestamp, numTransaction int, hash, prevHash, me
 
 func QueryOneBlock(hight int) (*data.BlockInfo, error) {
 	var (
-		countTxs, numTransaction, timestamp           int
+		countTxs, timestamp           int
 		hash, prevHash, merkleHash, stateHash, sqlStr string
 	)
 
 	sqlStr = fmt.Sprintf("%d", hight)
-	sqlStr = "select timeStamp, numTransaction, hash, prevHash, merkleHash, stateHash, countTxs from blocks where hight = " + sqlStr
-	if err := cockroachDb.QueryRow(sqlStr).Scan(&timestamp, &numTransaction, &hash, &prevHash, &merkleHash, &stateHash, &countTxs); nil != err {
+	sqlStr = "select timeStamp, hash, prevHash, merkleHash, stateHash, countTxs from blocks where hight = " + sqlStr
+	if err := cockroachDb.QueryRow(sqlStr).Scan(&timestamp, &hash, &prevHash, &merkleHash, &stateHash, &countTxs); nil != err {
 		return nil, err
 	}
-	return &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction}, nil
+	return &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp}, nil
 }
 
-func QueryBlock() ([]*data.BlockInfoh, error) {
+func QueryBlock(index, num int) ([]*data.BlockInfoh, int, error) {
 	//var rows *sql.Rows
-	rows, err := cockroachDb.Query("select * from blocks order by hight limit 10")
+	if 1 == index{
+		sqlStr := "select count(0) from blocks"
+		if err := cockroachDb.QueryRow(sqlStr).Scan(&curr_max_hight); nil != err {
+			return nil, -1, err
+		}
+	
+	}
+
+	var pageNum int
+	if curr_max_hight % num == 0{
+		pageNum = curr_max_hight/num
+	}else{
+		pageNum = curr_max_hight/num + 1
+	}
+
+	querysql := "select hight, timeStamp, hash, prevHash, merkleHash, stateHash, countTxs from blocks where hight between " + strconv.Itoa(curr_max_hight-(index-1)*10-9) + " and "
+	querysql += strconv.Itoa(curr_max_hight-(index-1)*10)
+	querysql += "order by hight desc"
+	rows, err := cockroachDb.Query(querysql)
 	if err != nil {
 		log.Fatal(err)
-		return nil, err
+		return nil, -1, err
 	}
 	defer rows.Close()
 
 	BlockInfoh := []*data.BlockInfoh{}
 	for rows.Next() {
 		var (
-			hight, countTxs, numTransaction       int
+			hight, countTxs, timestamp   int
 			hash, prevHash, merkleHash, stateHash string
-			timestamp int
 		)
 
-		if err = rows.Scan(&hight, &timestamp, &numTransaction, &hash, &prevHash, &merkleHash, &stateHash, &countTxs); err != nil {
+		if err = rows.Scan(&hight, &timestamp, &hash, &prevHash, &merkleHash, &stateHash, &countTxs); err != nil {
 			log.Fatal(err)
 			break
 		}
 
-	    BlockInfoh = append(BlockInfoh, &data.BlockInfoh{data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction}, hight})
+	    BlockInfoh = append(BlockInfoh, &data.BlockInfoh{data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp}, hight})
 		//return &data.BlockInfoh{data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction}, hight}, nil
 	}
 
 	//blockinfo := data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction}
 	//return &data.BlockInfoh{data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction}, hight}, nil
-	return BlockInfoh, nil
+	return BlockInfoh, pageNum, nil
 }

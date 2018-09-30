@@ -17,7 +17,6 @@
 package http
 
 import (
-	"github.com/ecoball/eballscan/data"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -30,11 +29,12 @@ func StartHttpServer() (err error) {
 	router := gin.Default()
 
 	//register handle
-	router.GET("/eballscan/getBlock", getBlock)
+	router.POST("/eballscan/getBlock", getBlock)
 	router.POST("/eballscan/getBlockByHeight", getBlockByHeight)
 	router.POST("/eballscan/add_block", addBlock)
-	router.POST("/eballscan/get_transaction", getTransaction)
+	router.POST("/eballscan/getTransactionByHash", getTransactionByHash)
 	router.POST("/eballscan/add_transaction", addTransaction)
+	router.POST("/eballscan/getTransactionByHight", getTransactionByHight)
 
 	http.ListenAndServe(":20680", router)
 	return nil
@@ -52,21 +52,28 @@ func getBlockByHeight(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"CountTxs": info.CountTxs, "StateHash": info.StateHash, "hash": info.Hash, "MerkleHash": info.MerkleHash, "PrevHash": info.PrevHash,
-			"timeStamp": info.Timestamp, "numTransaction": info.NumTransaction})
+			"timeStamp": info.Timestamp})
 }
 
 func getBlock(c *gin.Context) {
-	info, err := database.QueryBlock()
+	num_str := c.PostForm("num")
+	num, err := strconv.Atoi(num_str)
+	if nil != err{
+		panic(err) 
+	}
+
+	index_str := c.PostForm("index")
+	index, err := strconv.Atoi(index_str)
+	if nil != err{
+		panic(err) 
+	}
+
+	info, pageNum, err := database.QueryBlock(index, num)
 	if nil != err{
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 	}
 
-	datas := []data.BlockInfoh{}
-	for _, v := range info {
-		datas = append(datas, *v)
-	}
-
-	c.JSON(http.StatusOK, gin.H{"blocks info": datas})
+	c.JSON(http.StatusOK, gin.H{"pageNum": pageNum, "blocks info": info})
 }
 
 func addBlock(c *gin.Context) {
@@ -81,12 +88,6 @@ func addBlock(c *gin.Context) {
 	if nil != err{
 		panic(err) 
 	}
-
-	numTransaction_str := c.PostForm("numTransaction")
-	numTransaction, err := strconv.Atoi(numTransaction_str)
-	if nil != err{
-		panic(err) 
-	}
 	
 	countTxs_str := c.PostForm("countTxs")
 	countTxs, err := strconv.Atoi(countTxs_str)
@@ -98,7 +99,7 @@ func addBlock(c *gin.Context) {
 	prevHash := c.PostForm("prevHash")
 	merkleHash := c.PostForm("merkleHash")
 	stateHash := c.PostForm("stateHash")
-	errcode := database.AddBlock(hight, countTxs, timeStamp, numTransaction, hash, prevHash, merkleHash, stateHash)
+	errcode := database.AddBlock(hight, countTxs, timeStamp, hash, prevHash, merkleHash, stateHash)
 	if nil != errcode{
 		c.JSON(http.StatusBadRequest, gin.H{"result": errcode.Error()})
 	}
@@ -106,7 +107,7 @@ func addBlock(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
-func getTransaction(c *gin.Context) {
+func getTransactionByHash(c *gin.Context) {
 	hash := c.PostForm("hash")
 	info, err := database.QueryOneTransaction(hash)
 	if nil != err{
@@ -146,4 +147,24 @@ func addTransaction(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
+}
+
+func getTransactionByHight(c *gin.Context) {
+	height_str := c.PostForm("blockHight")
+	blockHight, err := strconv.Atoi(height_str)
+	if nil != err{
+		panic(err) 
+	}
+	
+	info, err := database.QueryTransactionsByHight(blockHight)
+	if nil != err{
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+	}
+
+	/*datas := []data.TransactionInfoH{}
+	for _, v := range info {
+		datas = append(datas, *v)
+	}*/
+
+	c.JSON(http.StatusOK, gin.H{"transactions": info})
 }

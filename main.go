@@ -17,43 +17,30 @@
 package main
 
 import (
-	"github.com/ecoball/eballscan/data"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/ecoball/eballscan/onlooker"
-	"github.com/kataras/iris"
 	"github.com/ecoball/eballscan/http"
+	"github.com/ecoball/go-ecoball/common/elog"
 )
+
+var log = elog.NewLogger("wallet", elog.DebugLog)
 
 func main() {
 	go onlooker.Bystander()
 	go http.StartHttpServer()
-	app := iris.New()
 
-	app.OnErrorCode(iris.StatusInternalServerError, func(ctx iris.Context) {
-
-		errMessage := ctx.Values().GetString("error")
-		if errMessage != "" {
-			ctx.Writef("Internal server error: %s", errMessage)
-			return
-		}
-
-		ctx.Writef("(Unexpected) internal server error")
-	})
-
-	app.Use(func(ctx iris.Context) {
-		ctx.Application().Logger().Infof("Begin request for path: %s", ctx.Path())
-		ctx.Next()
-	})
-	app.Get("/b", func(ctx iris.Context) {
-	
-		ctx.HTML(data.PrintBlock())
-	
-
-	})
-	app.Get("/t", func(ctx iris.Context) {
-
-		ctx.HTML(data.PrintTransaction())
-
-	})
-
-	app.Run(iris.Addr(":8080"), iris.WithCharset("UTF-8"), iris.WithoutVersionChecker)
+	wait()
 }
+
+//capture single
+func wait() {
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	defer signal.Stop(interrupt)
+	sig := <-interrupt
+	log.Info("ecoscan received signal:", sig)
+}
+

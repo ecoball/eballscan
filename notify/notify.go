@@ -50,14 +50,14 @@ func handleBlock(info []byte) error {
 	}
 
 	//add block
-	if err := database.AddBlock(int(oneBlock.Height), int(oneBlock.CountTxs), int(oneBlock.TimeStamp), len(oneBlock.Transactions), common.ToHex(oneBlock.Hash.Bytes()), common.ToHex(oneBlock.PrevHash.Bytes()),
+	if err := database.AddBlock(int(oneBlock.Height), int(oneBlock.CountTxs), int(oneBlock.TimeStamp), common.ToHex(oneBlock.Hash.Bytes()), common.ToHex(oneBlock.PrevHash.Bytes()),
 		common.ToHex(oneBlock.MerkleHash.Bytes()), common.ToHex(oneBlock.StateHash.Bytes())); nil != err {
 		log.Fatal(err)
 		return err
 	}
 
 	data.AddBlock(int(oneBlock.Height), &data.BlockInfo{common.ToHex(oneBlock.Hash.Bytes()), common.ToHex(oneBlock.PrevHash.Bytes()),
-		common.ToHex(oneBlock.MerkleHash.Bytes()), common.ToHex(oneBlock.StateHash.Bytes()), int(oneBlock.CountTxs), int(oneBlock.TimeStamp), len(oneBlock.Transactions)})
+		common.ToHex(oneBlock.MerkleHash.Bytes()), common.ToHex(oneBlock.StateHash.Bytes()), int(oneBlock.CountTxs), int(oneBlock.TimeStamp)})
 
 	//add transactions
 	for _, v := range oneBlock.Transactions {
@@ -66,7 +66,7 @@ func handleBlock(info []byte) error {
 			log.Fatal(err)
 			return err
 		}
-		data.AddTransaction(common.ToHex(v.Hash.Bytes()), &data.TransactionInfo{int(v.Type), time.Unix(v.TimeStamp, 0).Format("2006-01-02 15:04:05"),
+		data.AddTransaction(common.ToHex(v.Hash.Bytes()), &data.TransactionInfo{int(v.Type), time.Unix(v.TimeStamp/1000000000, 0).Format("2006-01-02 15:04:05"),
 			v.Permission, v.From.String(), v.Addr.String(), int(oneBlock.Height)})
 	}
 

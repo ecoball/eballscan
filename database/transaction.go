@@ -105,5 +105,35 @@ func QueryOneTransaction(hash string) (*data.TransactionInfo, error) {
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&txType, &timeStamp, &permission, &txFrom, &address, &blockHight); nil != err {
 		return nil, err
 	}
-	return &data.TransactionInfo{txType, time.Unix(int64(timeStamp), 0).Format("2006-01-02 15:04:05"), permission, txFrom, address, blockHight}, nil
+	return &data.TransactionInfo{txType, time.Unix(int64(timeStamp)/1000000000, 0).Format("2006-01-02 15:04:05"), permission, txFrom, address, blockHight}, nil
+}
+
+func QueryTransactionsByHight(blockHight int)([]*data.TransactionInfoH, error) {
+	sqlStr := fmt.Sprintf("%d", blockHight)
+	sqlStr = "select * from transactions where blockHight = " + sqlStr
+
+	rows, err := cockroachDb.Query(sqlStr)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	transactionInfoH := []*data.TransactionInfoH{}
+	for rows.Next() {
+		var (
+			txType, blockHight, timeStamp       int
+			permission, txFrom, address, hash string
+		)
+
+		if err = rows.Scan(&hash, &txType, &timeStamp, &permission, &txFrom, &address, &blockHight); err != nil {
+			log.Fatal(err)
+			break
+		}
+
+	    transactionInfoH = append(transactionInfoH, &data.TransactionInfoH{data.TransactionInfo{txType, time.Unix(int64(timeStamp)/1000000000, 0).Format("2006-01-02 15:04:05"), permission, txFrom, address, blockHight}, hash})
+		//return &data.BlockInfoh{data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction}, hight}, nil
+	}
+
+	return transactionInfoH, nil
 }

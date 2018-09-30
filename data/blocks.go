@@ -43,7 +43,6 @@ type BlockInfo struct {
 	StateHash  string
 	CountTxs   int
 	Timestamp  int 
-	NumTransaction int
 }
 type BlockInfoh struct {
 	BlockInfo
@@ -73,7 +72,6 @@ func PrintBlock() string {
 			One.StateHash = res.Data().(*BlockInfo).StateHash
 			One.CountTxs = res.Data().(*BlockInfo).CountTxs
 			One.Timestamp = res.Data().(*BlockInfo).Timestamp
-			One.NumTransaction = res.Data().(*BlockInfo).NumTransaction
 			BlockInfoHArray = append(BlockInfoHArray, One)
 		} else {
 			fmt.Println("Error retrieving value from cache:", err)
