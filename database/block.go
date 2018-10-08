@@ -139,7 +139,7 @@ func QueryOneBlock(hight int) (*data.BlockInfo, error) {
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&timestamp, &hash, &prevHash, &merkleHash, &stateHash, &countTxs); nil != err {
 		return nil, err
 	}
-	return &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp}, nil
+	return &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp/1e6}, nil
 }
 
 func QueryBlock(index, num int) ([]*data.BlockInfoh, int, error) {
@@ -181,7 +181,7 @@ func QueryBlock(index, num int) ([]*data.BlockInfoh, int, error) {
 			break
 		}
 
-	    BlockInfoh = append(BlockInfoh, &data.BlockInfoh{data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp}, hight})
+	    BlockInfoh = append(BlockInfoh, &data.BlockInfoh{data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp/1e6}, hight})
 		//return &data.BlockInfoh{data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction}, hight}, nil
 	}
 
