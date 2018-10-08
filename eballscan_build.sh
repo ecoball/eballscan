@@ -35,3 +35,5 @@ cockroach sql --insecure -e 'GRANT ALL ON DATABASE blockchain TO eballscan'
 
 #build project
 make
+
+
