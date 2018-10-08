@@ -20,10 +20,13 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
+	"strconv"
 
 	"github.com/ecoball/eballscan/data"
 	"github.com/muesli/cache2go"
 )
+
+var current_transactions_num int
 
 func initTransaction() (err error) {
 	// Create the "transactions" table.
@@ -40,6 +43,11 @@ func initTransaction() (err error) {
 		log.Fatal(err)
 		return
 	}*/
+
+	sqlStr := "select count(0) from transactions"
+	if err := cockroachDb.QueryRow(sqlStr).Scan(&current_transactions_num); nil != err {
+		return err
+	}
 
 	//Load the data of transactions into the cache
 	var rows *sql.Rows
@@ -131,9 +139,54 @@ func QueryTransactionsByHight(blockHight int)([]*data.TransactionInfoH, error) {
 			break
 		}
 
-	    transactionInfoH = append(transactionInfoH, &data.TransactionInfoH{data.TransactionInfo{txType, time.Unix(int64(timeStamp)/1000000000, 0).Format("2006-01-02 15:04:05"), permission, txFrom, address, blockHight}, hash})
+	    transactionInfoH = append(transactionInfoH, &data.TransactionInfoH{data.TransactionInfo{txType, time.Unix(int64(timeStamp)/1e9, 0).Format("2006-01-02 15:04:05.000"), permission, txFrom, address, blockHight}, hash})
 		//return &data.BlockInfoh{data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction}, hight}, nil
 	}
 
 	return transactionInfoH, nil
+}
+
+func QueryTransaction(index, num int)([]*data.TransactionInfoH, int, error) {
+	if 1 == index{
+		sqlStr := "select count(0) from transactions"
+		if err := cockroachDb.QueryRow(sqlStr).Scan(&current_transactions_num); nil != err {
+			return nil, -1, err
+		}
+	
+	}
+
+	var pageNum int
+	if current_transactions_num % num == 0{
+		pageNum = current_transactions_num/num
+	}else{
+		pageNum = current_transactions_num/num + 1
+	}
+
+	sqlStr := "select * from transactions order by timeStamp desc limit "
+	sqlStr = sqlStr + strconv.Itoa(num) + " offset " + strconv.Itoa((index-1)*num)
+
+	rows, err := cockroachDb.Query(sqlStr)
+	if err != nil {
+		log.Fatal(err)
+		return nil, -1, err
+	}
+	defer rows.Close()
+
+	transactionInfoH := []*data.TransactionInfoH{}
+	for rows.Next() {
+		var (
+			txType, blockHight, timeStamp       int
+			permission, txFrom, address, hash string
+		)
+
+		if err = rows.Scan(&hash, &txType, &timeStamp, &permission, &txFrom, &address, &blockHight); err != nil {
+			log.Fatal(err)
+			break
+		}
+
+	    transactionInfoH = append(transactionInfoH, &data.TransactionInfoH{data.TransactionInfo{txType, time.Unix(int64(timeStamp)/1e9, 0).Format("2006-01-02 15:04:05.000"), permission, txFrom, address, blockHight}, hash})
+		//return &data.BlockInfoh{data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction}, hight}, nil
+	}
+
+	return transactionInfoH, pageNum, nil
 }

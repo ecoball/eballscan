@@ -35,6 +35,7 @@ func StartHttpServer() (err error) {
 	router.POST("/eballscan/getTransactionByHash", getTransactionByHash)
 	router.POST("/eballscan/add_transaction", addTransaction)
 	router.POST("/eballscan/getTransactionByHight", getTransactionByHight)
+	router.POST("/eballscan/getTransaction", getTransaction)
 
 	http.ListenAndServe(":20680", router)
 	return nil
@@ -73,7 +74,28 @@ func getBlock(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"pageNum": pageNum, "blocks info": info})
+	c.JSON(http.StatusOK, gin.H{"pageNum": pageNum, "blocks": info})
+}
+
+func getTransaction(c *gin.Context) {
+	num_str := c.PostForm("num")
+	num, err := strconv.Atoi(num_str)
+	if nil != err{
+		panic(err) 
+	}
+
+	index_str := c.PostForm("index")
+	index, err := strconv.Atoi(index_str)
+	if nil != err{
+		panic(err) 
+	}
+
+	info, pageNum, err := database.QueryTransaction(index, num)
+	if nil != err{
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"pageNum": pageNum, "transactions": info})
 }
 
 func addBlock(c *gin.Context) {
@@ -114,8 +136,7 @@ func getTransactionByHash(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"Address": info.Address, "BlockHight": info.BlockHight, "Permission": info.Permission, "TimeStamp": info.TimeStamp, "TxFrom":info.TxFrom, 
-	"TxType": info.TxType})
+	c.JSON(http.StatusOK, gin.H{"transaction": info})
 }
 
 func addTransaction(c *gin.Context) {
@@ -166,5 +187,5 @@ func getTransactionByHight(c *gin.Context) {
 		datas = append(datas, *v)
 	}*/
 
-	c.JSON(http.StatusOK, gin.H{"transactions": info})
+	c.JSON(http.StatusOK, gin.H{"counts": len(info), "transactions": info})
 }

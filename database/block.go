@@ -39,6 +39,11 @@ func initBlock() (err error) {
 		return
 	}
 
+	sqlStr := "select count(0) from blocks"
+	if err := cockroachDb.QueryRow(sqlStr).Scan(&curr_max_hight); nil != err {
+		return err
+	}
+
 	/*if _, err = cockroachDb.Exec(
 		`drop table if exists blocks`); err != nil {
 		log.Fatal(err)
@@ -154,9 +159,9 @@ func QueryBlock(index, num int) ([]*data.BlockInfoh, int, error) {
 		pageNum = curr_max_hight/num + 1
 	}
 
-	querysql := "select hight, timeStamp, hash, prevHash, merkleHash, stateHash, countTxs from blocks where hight between " + strconv.Itoa(curr_max_hight-(index-1)*10-9) + " and "
-	querysql += strconv.Itoa(curr_max_hight-(index-1)*10)
-	querysql += "order by hight desc"
+
+	querysql := "select * from blocks order by timeStamp desc limit "
+	querysql = querysql + strconv.Itoa(num) + " offset " + strconv.Itoa((index-1)*num)
 	rows, err := cockroachDb.Query(querysql)
 	if err != nil {
 		log.Fatal(err)
