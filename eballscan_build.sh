@@ -16,23 +16,36 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the eballscan. If not, see <http://www.gnu.org/licenses/>.
 ############################################################################
+
+#clean old install
+if [ -d "./build" ]; then
+    echo -e "\033[;33m old eballscan needs to be removed.\033[0m"
+    if ! rm -fr "./build/"
+    then
+        echo  -e "\033[;31m remove ./build/ failed!!! \033[0m"
+        exit 1
+    fi
+fi
+
 #install cockroachdb
-wget -qO- https://binaries.cockroachdb.com/cockroach-v2.0.4.linux-amd64.tgz | tar  xvz
-if [ 0 -ne $? ]; then
-    echo  -e "\033[;31m Unable to download cockroach-v2.0.4.linux-amd64.tgz at this time!!! \033[0m"
-    exit 1
-fi
+if [ ! -e "/usr/local/bin/cockroach" ]; then
+    wget -qO- https://binaries.cockroachdb.com/cockroach-v2.0.4.linux-amd64.tgz | tar  xvz
+    if [ 0 -ne $? ]; then
+        echo  -e "\033[;31m Unable to download cockroach-v2.0.4.linux-amd64.tgz at this time!!! \033[0m"
+        exit 1
+    fi
 
-sudo cp -i cockroach-v2.0.4.linux-amd64/cockroach /usr/local/bin
-if [ 0 -ne $? ]; then
-    echo  -e "\033[;31m install cockroach-v2.0.4.linux-amd64 failed!!! \033[0m"
-    exit 1
-fi
+    sudo cp -i cockroach-v2.0.4.linux-amd64/cockroach /usr/local/bin
+    if [ 0 -ne $? ]; then
+        echo  -e "\033[;31m install cockroach-v2.0.4.linux-amd64 failed!!! \033[0m"
+        exit 1
+    fi
 
-if ! rm -fr "./cockroach-v2.0.4.linux-amd64"
-then
-    echo  -e "\033[;31m delete cockroach-v2.0.4.linux-amd64 failed!!! \033[0m"
-    exit 1
+    if ! rm -fr "./cockroach-v2.0.4.linux-amd64"
+    then
+        echo  -e "\033[;31m remove cockroach-v2.0.4.linux-amd64 failed!!! \033[0m"
+        exit 1
+    fi
 fi
 
 #start cockroachdb
