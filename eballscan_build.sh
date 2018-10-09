@@ -16,14 +16,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the eballscan. If not, see <http://www.gnu.org/licenses/>.
 ############################################################################
-
-#build project
-if ! make
-then
-    echo  -e "\033[;31m compile eballscan failed!!! \033[0m"
-    exit 1
-fi
-
 #install cockroachdb
 wget -qO- https://binaries.cockroachdb.com/cockroach-v2.0.4.linux-amd64.tgz | tar  xvz
 if [ 0 -ne $? ]; then
@@ -77,4 +69,11 @@ if [ 0 -ne $? ]; then
     exit 1
 fi
 
+#build project
+if ! make
+then
+    echo  -e "\033[;31m compile eballscan failed!!! \033[0m"
+    exit 1
+fi
 
+echo -e "\033[;32m build eballscan succeed\033[0m"
