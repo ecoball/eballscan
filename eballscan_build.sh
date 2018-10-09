@@ -63,6 +63,6 @@ if ! make
 then
     echo  -e "\033[;31m compile eballscan failed!!! \033[0m"
     exit 1
-if
+fi
 
-
+echo -e "\033[;32m build eballscan succeed\033[0m"
