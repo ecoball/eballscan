@@ -42,16 +42,16 @@ type BlockInfo struct {
 	MerkleHash string
 	StateHash  string
 	CountTxs   int
-	Timestamp  int 
+	TimeStamp  int 
 }
 type BlockInfoh struct {
 	BlockInfo
-	Hight int
+	Height int
 }
 
 
-func AddBlock(hight int, info *BlockInfo) {
-	Blocks.Add(hight, BLOCK_SPAN, info)
+func AddBlock(height int, info *BlockInfo) {
+	Blocks.Add(height, BLOCK_SPAN, info)
 
 }
 func PrintBlock() string {
@@ -65,13 +65,13 @@ func PrintBlock() string {
 
 		if err == nil {
 			One := BlockInfoh{}
-			One.Hight = i
+			One.Height = i
 			One.Hash = res.Data().(*BlockInfo).Hash
 			One.PrevHash = res.Data().(*BlockInfo).PrevHash
 			One.MerkleHash = res.Data().(*BlockInfo).MerkleHash
 			One.StateHash = res.Data().(*BlockInfo).StateHash
 			One.CountTxs = res.Data().(*BlockInfo).CountTxs
-			One.Timestamp = res.Data().(*BlockInfo).Timestamp
+			One.TimeStamp = res.Data().(*BlockInfo).TimeStamp
 			BlockInfoHArray = append(BlockInfoHArray, One)
 		} else {
 			fmt.Println("Error retrieving value from cache:", err)
