@@ -115,7 +115,8 @@ func AddBlock(hight, countTxs, timestamp int, hash, prevHash, merkleHash, stateH
 	values = "insert into blocks(hight, timeStamp, hash, prevHash, merkleHash, stateHash, countTxs) values" + values
 	_, err = cockroachDb.Exec(values)
 	if nil != err {
-		log.Fatal(err)
+		//log.Fatal(err)
+		return err
 	}
 
 	data.AddBlock(hight, &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp})
