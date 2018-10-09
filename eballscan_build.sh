@@ -19,41 +19,41 @@
 
 #install cockroachdb
 wget -qO- https://binaries.cockroachdb.com/cockroach-v2.0.4.linux-amd64.tgz | tar  xvz
-if [ 0 ne $? ] then;
+if [ 0 -ne $? ]; then
     echo  "\033[;31m Unable to download cockroach-v2.0.4.linux-amd64.tgz at this time!!! \033[0m"
     exit 1
 fi
 
 sudo cp -i cockroach-v2.0.4.linux-amd64/cockroach /usr/local/bin
-if [ 0 ne $? ] then;
+if [ 0 -ne $? ]; then
     echo  "\033[;31m install cockroach-v2.0.4.linux-amd64 failed!!! \033[0m"
     exit 1
 fi
 
 #start cockroachdb
 cockroach start --insecure --http-port=8081 --background
-if [ 0 ne $? ] then;
+if [ 0 -ne $? ]; then
     echo  "\033[;31m start cockroach failed!!! \033[0m"
     exit 1
 fi
 
 #create user eballscan
 cockroach user set eballscan --insecure
-if [ 0 ne $? ] then;
+if [ 0 -ne $? ]; then
     echo  "\033[;31m create user eballscan failed!!! \033[0m"
     exit 1
 fi
 
 #create database blockchain
 cockroach sql --insecure -e 'create database blockchain'
-if [ 0 ne $? ] then;
+if [ 0 -ne $? ]; then
     echo  "\033[;31m create database blockchain failed!!! \033[0m"
     exit 1
 fi
 
 #grant eballscan
 cockroach sql --insecure -e 'GRANT ALL ON DATABASE blockchain TO eballscan'
-if [ 0 ne $? ] then;
+if [ 0 -ne $? ]; then
     echo  "\033[;31m grant eballscan failed!!! \033[0m"
     exit 1
 fi
