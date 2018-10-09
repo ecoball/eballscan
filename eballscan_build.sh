@@ -17,6 +17,13 @@
 # along with the eballscan. If not, see <http://www.gnu.org/licenses/>.
 ############################################################################
 
+#build project
+if ! make
+then
+    echo  -e "\033[;31m compile eballscan failed!!! \033[0m"
+    exit 1
+fi
+
 #install cockroachdb
 wget -qO- https://binaries.cockroachdb.com/cockroach-v2.0.4.linux-amd64.tgz | tar  xvz
 if [ 0 -ne $? ]; then
@@ -32,12 +39,18 @@ fi
 
 if ! rm -fr "./cockroach-v2.0.4.linux-amd64"
 then
-    echo  -e "\033[;31m install cockroach-v2.0.4.linux-amd64 failed!!! \033[0m"
+    echo  -e "\033[;31m delete cockroach-v2.0.4.linux-amd64 failed!!! \033[0m"
     exit 1
 fi
 
 #start cockroachdb
-cockroach start --insecure --http-port=8081 --background
+if ! mkdir -p ./build/cockroachdb/store ./build/cockroachdb/log
+then
+    echo -e "\033[;31m create directory failed!!! \033[0m"
+    exit 1
+fi
+
+cockroach start --insecure --http-port=8081 --background --store=../build/cockroachdb/store --log-dir=./build/cockroachdb/log
 if [ 0 -ne $? ]; then
     echo  -e "\033[;31m start cockroach failed!!! \033[0m"
     exit 1
@@ -64,11 +77,4 @@ if [ 0 -ne $? ]; then
     exit 1
 fi
 
-#build project
-if ! make
-then
-    echo  -e "\033[;31m compile eballscan failed!!! \033[0m"
-    exit 1
-fi
 
-echo -e "\033[;32m build eballscan succeed\033[0m"
