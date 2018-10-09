@@ -47,12 +47,13 @@ func getBlockByHeight(c *gin.Context) {
 	if nil != err{
 		panic(err) 
 	}
-	info, err := database.QueryOneBlock(height)
+	
+	info, max_hight, err := database.QueryOneBlock(height)
 	if nil != err{
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"block": info})
+	c.JSON(http.StatusOK, gin.H{"max_hight": max_hight, "block": info})
 }
 
 func getBlock(c *gin.Context) {

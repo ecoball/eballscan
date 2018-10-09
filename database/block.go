@@ -97,7 +97,7 @@ func initBlock() (err error) {
 			return nil
 		}
 
-		val, err := QueryOneBlock(hight)
+		val, _, err := QueryOneBlock(hight)
 		if nil != err {
 			return nil
 		}
@@ -129,18 +129,23 @@ func AddBlock(hight, countTxs, timestamp int, hash, prevHash, merkleHash, stateH
 	return
 }
 
-func QueryOneBlock(hight int) (*data.BlockInfo, error) {
+func QueryOneBlock(hight int) (*data.BlockInfo, int, error) {
 	var (
-		countTxs, timestamp           int
+		countTxs, timestamp,max_hight          int
 		hash, prevHash, merkleHash, stateHash, sqlStr string
 	)
+
+	queryStr := "select count(0) from blocks"
+	if err := cockroachDb.QueryRow(queryStr).Scan(&max_hight); nil != err {
+		return nil, -1, err
+	}
 
 	sqlStr = fmt.Sprintf("%d", hight)
 	sqlStr = "select timeStamp, hash, prevHash, merkleHash, stateHash, countTxs from blocks where hight = " + sqlStr
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&timestamp, &hash, &prevHash, &merkleHash, &stateHash, &countTxs); nil != err {
-		return nil, err
+		return nil, -1, err
 	}
-	return &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp/1e6}, nil
+	return &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp/1e6}, max_hight, nil
 }
 
 func QueryBlock(index, num int) ([]*data.BlockInfoh, int, error) {
@@ -159,7 +164,6 @@ func QueryBlock(index, num int) ([]*data.BlockInfoh, int, error) {
 	}else{
 		pageNum = curr_max_hight/num + 1
 	}
-
 
 	querysql := "select * from blocks order by timeStamp desc limit "
 	querysql = querysql + strconv.Itoa(num) + " offset " + strconv.Itoa((index-1)*num)
