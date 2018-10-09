@@ -11,7 +11,6 @@ eballscan:
 	go build -v -o eballscan main.go
 	mv eballscan build/
 
-
 .PHONY: clean
 clean:
 	@echo "\033[;31mclean project \033[0m"

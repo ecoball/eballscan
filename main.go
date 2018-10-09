@@ -21,12 +21,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/ecoball/eballscan/onlooker"
 	"github.com/ecoball/eballscan/http"
+	"github.com/ecoball/eballscan/onlooker"
 	"github.com/ecoball/go-ecoball/common/elog"
 )
 
-var log = elog.NewLogger("wallet", elog.DebugLog)
+var log = elog.NewLogger("eballscan", elog.DebugLog)
 
 func main() {
 	go onlooker.Bystander()
@@ -41,6 +41,5 @@ func wait() {
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer signal.Stop(interrupt)
 	sig := <-interrupt
-	log.Info("ecoscan received signal:", sig)
+	log.Info("eballscan received signal:", sig)
 }
-
