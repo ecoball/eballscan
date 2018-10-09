@@ -52,7 +52,7 @@ func handleBlock(info []byte) error {
 	//add block
 	if err := database.AddBlock(int(oneBlock.Height), int(oneBlock.CountTxs), int(oneBlock.TimeStamp), common.ToHex(oneBlock.Hash.Bytes()), common.ToHex(oneBlock.PrevHash.Bytes()),
 		common.ToHex(oneBlock.MerkleHash.Bytes()), common.ToHex(oneBlock.StateHash.Bytes())); nil != err {
-		log.Fatal(err)
+		//log.Fatal(err)
 		return err
 	}
 
