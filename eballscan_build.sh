@@ -30,6 +30,12 @@ if [ 0 -ne $? ]; then
     exit 1
 fi
 
+if ! rm -fr "./cockroach-v2.0.4.linux-amd64"
+then
+    echo  -e "\033[;31m install cockroach-v2.0.4.linux-amd64 failed!!! \033[0m"
+    exit 1
+fi
+
 #start cockroachdb
 cockroach start --insecure --http-port=8081 --background
 if [ 0 -ne $? ]; then
