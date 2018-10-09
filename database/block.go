@@ -39,7 +39,7 @@ func initBlock() (err error) {
 		return
 	}
 
-	sqlStr := "select count(0) from blocks"
+	sqlStr := "select max(hight) from blocks"
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&curr_max_hight); nil != err {
 		return err
 	}
@@ -135,7 +135,7 @@ func QueryOneBlock(hight int) (*data.BlockInfo, int, error) {
 		hash, prevHash, merkleHash, stateHash, sqlStr string
 	)
 
-	queryStr := "select count(0) from blocks"
+	queryStr := "select max(hight) from blocks"
 	if err := cockroachDb.QueryRow(queryStr).Scan(&max_hight); nil != err {
 		return nil, -1, err
 	}
@@ -151,7 +151,7 @@ func QueryOneBlock(hight int) (*data.BlockInfo, int, error) {
 func QueryBlock(index, num int) ([]*data.BlockInfoh, int, error) {
 	//var rows *sql.Rows
 	if 1 == index{
-		sqlStr := "select count(0) from blocks"
+		sqlStr := "select max(hight) from blocks"
 		if err := cockroachDb.QueryRow(sqlStr).Scan(&curr_max_hight); nil != err {
 			return nil, -1, err
 		}
