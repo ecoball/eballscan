@@ -49,13 +49,13 @@ if [ ! -e "/usr/local/bin/cockroach" ]; then
 fi
 
 #start cockroachdb
-if ! mkdir -p ./build/cockroachdb/store ./build/cockroachdb/log
+if ! mkdir -p ./build
 then
     echo -e "\033[;31m create directory failed!!! \033[0m"
     exit 1
 fi
 
-cockroach start --insecure --http-port=8081 --background --store=../build/cockroachdb/store --log-dir=./build/cockroachdb/log
+cd ./build/ && cockroach start --insecure --http-port=8081 --background && cd ../
 if [ 0 -ne $? ]; then
     echo  -e "\033[;31m start cockroach failed!!! \033[0m"
     exit 1
