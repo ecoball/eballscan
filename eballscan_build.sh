@@ -19,12 +19,23 @@
 
 #clean old install
 if [ -d "./build" ]; then
-    echo -e "\033[;33m old eballscan needs to be removed.\033[0m"
-    if ! rm -fr "./build/"
-    then
-        echo  -e "\033[;31m remove ./build/ failed!!! \033[0m"
-        exit 1
-    fi
+    echo -e "\033[;33m old eballscan and cockroach-data needs to be removed.\033[0m"
+    echo -e "\033[;33m Do you wish to remove this install?\033[0m"
+    select yn in "Yes" "No"; do
+        echo $yn
+        case $yn in
+            [Yy]* )
+                if ! rm -fr "./build/"
+                then
+                    echo  -e "\033[;31m remove ./build/ failed!!! \033[0m"
+                    exit 1
+                fi
+                break;;
+            [Nn]* )
+                echo -e "\033[;33m Aborting uninstall\033[0m"
+                exit 0;;
+        esac
+   done
 fi
 
 #install cockroachdb
@@ -89,4 +100,4 @@ then
     exit 1
 fi
 
-echo -e "\033[;32m build eballscan succeed\033[0m"
+echo -e "\033[;32mbuild eballscan succeed\033[0m"
