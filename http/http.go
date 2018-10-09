@@ -52,8 +52,7 @@ func getBlockByHeight(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"CountTxs": info.CountTxs, "StateHash": info.StateHash, "hash": info.Hash, "MerkleHash": info.MerkleHash, "PrevHash": info.PrevHash,
-			"timeStamp": info.Timestamp})
+	c.JSON(http.StatusOK, gin.H{"block": info})
 }
 
 func getBlock(c *gin.Context) {
