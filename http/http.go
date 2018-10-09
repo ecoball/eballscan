@@ -34,7 +34,7 @@ func StartHttpServer() (err error) {
 	router.POST("/eballscan/add_block", addBlock)
 	router.POST("/eballscan/getTransactionByHash", getTransactionByHash)
 	router.POST("/eballscan/add_transaction", addTransaction)
-	router.POST("/eballscan/getTransactionByHight", getTransactionByHight)
+	router.POST("/eballscan/getTransactionByHeight", getTransactionByHeight)
 	router.POST("/eballscan/getTransaction", getTransaction)
 
 	http.ListenAndServe(":20680", router)
@@ -42,18 +42,18 @@ func StartHttpServer() (err error) {
 }
 
 func getBlockByHeight(c *gin.Context) {
-	height_str := c.PostForm("hight")
+	height_str := c.PostForm("height")
 	height, err := strconv.Atoi(height_str)
 	if nil != err{
 		panic(err) 
 	}
-	
-	info, max_hight, err := database.QueryOneBlock(height)
+
+	info, max_height, err := database.QueryOneBlock(height)
 	if nil != err{
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"max_hight": max_hight, "block": info})
+	c.JSON(http.StatusOK, gin.H{"max_height": max_height, "block": info})
 }
 
 func getBlock(c *gin.Context) {
@@ -99,29 +99,29 @@ func getTransaction(c *gin.Context) {
 }
 
 func addBlock(c *gin.Context) {
-	hight_str := c.PostForm("hight")
-	hight, err := strconv.Atoi(hight_str)
+	height_str := c.PostForm("Height")
+	height, err := strconv.Atoi(height_str)
 	if nil != err{
 		panic(err) 
 	}
 
-	time_str := c.PostForm("timeStamp")
+	time_str := c.PostForm("TimeStamp")
 	timeStamp, err := strconv.Atoi(time_str)
 	if nil != err{
 		panic(err) 
 	}
 	
-	countTxs_str := c.PostForm("countTxs")
+	countTxs_str := c.PostForm("CountTxs")
 	countTxs, err := strconv.Atoi(countTxs_str)
 	if nil != err{
 		panic(err) 
 	}
 
-	hash := c.PostForm("hash")
-	prevHash := c.PostForm("prevHash")
-	merkleHash := c.PostForm("merkleHash")
-	stateHash := c.PostForm("stateHash")
-	errcode := database.AddBlock(hight, countTxs, timeStamp, hash, prevHash, merkleHash, stateHash)
+	hash := c.PostForm("Hash")
+	prevHash := c.PostForm("PrevHash")
+	merkleHash := c.PostForm("MerkleHash")
+	stateHash := c.PostForm("StateHash")
+	errcode := database.AddBlock(height, countTxs, timeStamp, hash, prevHash, merkleHash, stateHash)
 	if nil != errcode{
 		c.JSON(http.StatusBadRequest, gin.H{"result": errcode.Error()})
 	}
@@ -140,29 +140,29 @@ func getTransactionByHash(c *gin.Context) {
 }
 
 func addTransaction(c *gin.Context) {
-	txType_str := c.PostForm("txType")
+	txType_str := c.PostForm("TxType")
 	txType, err := strconv.Atoi(txType_str)
 	if nil != err{
 		panic(err) 
 	}
 	
-	timeStamp_str := c.PostForm("timeStamp")
+	timeStamp_str := c.PostForm("TimeStamp")
 	timeStamp, err := strconv.Atoi(timeStamp_str)
 	if nil != err{
 		panic(err) 
 	}
 
-	blockHight_str := c.PostForm("blockHight")
-	blockHight, err := strconv.Atoi(blockHight_str)
+	blockHeight_str := c.PostForm("BlockHeight")
+	blockHeight, err := strconv.Atoi(blockHeight_str)
 	if nil != err{
 		panic(err) 
 	}
 
-	hash := c.PostForm("hash")
-	permission := c.PostForm("permission")
-	txFrom := c.PostForm("txFrom")
-	address := c.PostForm("address")
-	errcode := database.AddTransaction(txType, timeStamp, blockHight, hash, permission, txFrom, address)
+	hash := c.PostForm("Hash")
+	permission := c.PostForm("Permission")
+	txFrom := c.PostForm("TxFrom")
+	address := c.PostForm("Address")
+	errcode := database.AddTransaction(txType, timeStamp, blockHeight, hash, permission, txFrom, address)
 	if nil != errcode{
 		c.JSON(http.StatusBadRequest, gin.H{"result": errcode.Error()})
 	}
@@ -170,14 +170,14 @@ func addTransaction(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
-func getTransactionByHight(c *gin.Context) {
-	height_str := c.PostForm("blockHight")
-	blockHight, err := strconv.Atoi(height_str)
+func getTransactionByHeight(c *gin.Context) {
+	height_str := c.PostForm("blockHeight")
+	blockHeight, err := strconv.Atoi(height_str)
 	if nil != err{
 		panic(err) 
 	}
 	
-	info, err := database.QueryTransactionsByHight(blockHight)
+	info, err := database.QueryTransactionsByHeight(blockHeight)
 	if nil != err{
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 	}

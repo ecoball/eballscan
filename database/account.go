@@ -53,8 +53,6 @@ func initAccount() (err error) {
 			log.Fatal(err)
 			break
 		}
-		/*data.THashArray  =append(data.THashArray , hash)
-		data.AddTransaction(hash, &data.TransactionInfo{txType, time.Unix(int64(timeStamp), 0).Format("2006-01-02 15:04:05"), permission, txFrom, address, blockHight})*/
 	}
 
 	//set loader
@@ -76,10 +74,10 @@ func initAccount() (err error) {
 	return
 }
 
-func AddAccount(txType, timeStamp, blockHight int, hash, permission, txFrom, address string) (err error) {
+func AddAccount(txType, timeStamp, blockHeight int, hash, permission, txFrom, address string) (err error) {
 	var values string
-	values = fmt.Sprintf(`('%s', %d, %d, '%s', '%s', '%s', %d)`, hash, txType, timeStamp, permission, txFrom, address, blockHight)
-	values = "insert into transactions(hash, txType, timeStamp, permission, txFrom, address, blockHight) values" + values
+	values = fmt.Sprintf(`('%s', %d, %d, '%s', '%s', '%s', %d)`, hash, txType, timeStamp, permission, txFrom, address, blockHeight)
+	values = "insert into transactions(hash, txType, timeStamp, permission, txFrom, address, blockHeight) values" + values
 	_, err = cockroachDb.Exec(values)
 	if nil != err {
 		log.Fatal(err)

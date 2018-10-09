@@ -29,19 +29,19 @@ var (
 	log = elog.NewLogger("syn", elog.DebugLog)
 )
 
-type BlockHight int
+type BlockHeight int
 
-func (this *BlockHight) Serialize() ([]byte, error) {
+func (this *BlockHeight) Serialize() ([]byte, error) {
 	return json.Marshal(*this)
 }
 
-func (this *BlockHight) Deserialize(data []byte) error {
+func (this *BlockHeight) Deserialize(data []byte) error {
 	return json.Unmarshal(data, this)
 }
 
 func SynBlocks(conn net.Conn) {
-	hight := BlockHight(database.MaxHight)
-	oneNotify, err := info.NewOneNotify(info.SynBlock, &hight)
+	height := BlockHeight(database.MaxHeight)
+	oneNotify, err := info.NewOneNotify(info.SynBlock, &height)
 	if nil != err {
 		log.Error("SynBlocks newOneNotify error: ", err)
 		return

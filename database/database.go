@@ -51,9 +51,9 @@ func init() {
 		os.Exit(1)
 	}
 
-	err = initAccount()
+	/*err = initAccount()
 	if err != nil {
 		log.Fatal("initialize account error: ", err)
 		os.Exit(1)
-	}
+	}*/
 }

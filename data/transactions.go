@@ -40,7 +40,7 @@ type TransactionInfo struct {
 	Permission string
 	TxFrom     string
 	Address    string
-	BlockHight int
+	BlockHeight int
 }
 type TransactionInfoH struct {
 	TransactionInfo
@@ -66,7 +66,7 @@ func PrintTransaction() string {
 		One.Permission = res.Data().(*TransactionInfo).Permission
 		One.TxFrom = res.Data().(*TransactionInfo).TxFrom
 		One.Address = res.Data().(*TransactionInfo).Address
-		One.BlockHight = res.Data().(*TransactionInfo).BlockHight
+		One.BlockHeight = res.Data().(*TransactionInfo).BlockHeight
 		TransactionInfoHArray = append(TransactionInfoHArray, One)
 		} else {
 			fmt.Println("Error retrieving value from cache:", err)

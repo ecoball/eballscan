@@ -46,12 +46,12 @@ type BlockInfo struct {
 }
 type BlockInfoh struct {
 	BlockInfo
-	Hight int
+	Height int
 }
 
 
-func AddBlock(hight int, info *BlockInfo) {
-	Blocks.Add(hight, BLOCK_SPAN, info)
+func AddBlock(height int, info *BlockInfo) {
+	Blocks.Add(height, BLOCK_SPAN, info)
 
 }
 func PrintBlock() string {
@@ -65,7 +65,7 @@ func PrintBlock() string {
 
 		if err == nil {
 			One := BlockInfoh{}
-			One.Hight = i
+			One.Height = i
 			One.Hash = res.Data().(*BlockInfo).Hash
 			One.PrevHash = res.Data().(*BlockInfo).PrevHash
 			One.MerkleHash = res.Data().(*BlockInfo).MerkleHash
