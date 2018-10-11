@@ -97,7 +97,7 @@ func AddTransaction(txType, timeStamp, blockHeight int, hash, permission, txFrom
 	values = "insert into transactions(hash, txType, timeStamp, permission, txFrom, address, blockHeight) values" + values
 	_, err = cockroachDb.Exec(values)
 	if nil != err {
-		log.Fatal(err)
+		return err
 	}
 
 	return
@@ -114,6 +114,49 @@ func QueryOneTransaction(hash string) (*data.TransactionInfo, error) {
 		return nil, err
 	}
 	return &data.TransactionInfo{txType, strconv.Itoa(timeStamp/1e6), permission, txFrom, address, blockHeight}, nil
+}
+
+func QueryTransactionsByAccountName(num, index int, name string)([]*data.TransactionInfoH, int, error) {
+	var pageNum, counts int
+	sqlStr := "select count(0) from transactions where txFrom = '"
+	sqlStr = sqlStr + name + "' or address = '" + name + "'"
+	if err := cockroachDb.QueryRow(sqlStr).Scan(&counts); nil != err {
+		return nil, -1, err
+	}
+	
+	if counts % num == 0{
+		pageNum = counts/num
+	}else{
+		pageNum = counts/num + 1
+	}
+
+
+	querySql := "select * from transactions where txFrom = '"
+	querySql = querySql + name + "' or address = '" + name + "' order by timeStamp desc limit " + strconv.Itoa(num) + " offset " + strconv.Itoa((index-1)*num)
+
+	rows, err := cockroachDb.Query(querySql)
+	if err != nil {
+		log.Fatal(err)
+		return nil, -1, err
+	}
+	defer rows.Close()
+
+	transactionInfoH := []*data.TransactionInfoH{}
+	for rows.Next() {
+		var (
+			txType, blockHeight, timeStamp       int
+			permission, txFrom, address, hash string
+		)
+
+		if err = rows.Scan(&hash, &txType, &timeStamp, &permission, &txFrom, &address, &blockHeight); err != nil {
+			log.Fatal(err)
+			break
+		}
+
+	    transactionInfoH = append(transactionInfoH, &data.TransactionInfoH{data.TransactionInfo{txType, strconv.Itoa(timeStamp/1e6), permission, txFrom, address, blockHeight}, hash})
+	}
+
+	return transactionInfoH, pageNum, nil
 }
 
 func QueryTransactionsByHeight(blockHeight int)([]*data.TransactionInfoH, error) {
