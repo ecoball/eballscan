@@ -36,6 +36,7 @@ func StartHttpServer() (err error) {
 	router.POST("/eballscan/add_transaction", addTransaction)
 	router.POST("/eballscan/getTransactionByHeight", getTransactionByHeight)
 	router.POST("/eballscan/getTransaction", getTransaction)
+	router.POST("/eballscan/getTransactionsByAccountName", getTransactionsByAccountName)
 
 	http.ListenAndServe(":20680", router)
 	return nil
@@ -45,12 +46,14 @@ func getBlockByHeight(c *gin.Context) {
 	height_str := c.PostForm("height")
 	height, err := strconv.Atoi(height_str)
 	if nil != err{
-		panic(err) 
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 
 	info, max_height, err := database.QueryOneBlock(height)
 	if nil != err{
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"max_height": max_height, "block": info})
@@ -60,18 +63,21 @@ func getBlock(c *gin.Context) {
 	num_str := c.PostForm("num")
 	num, err := strconv.Atoi(num_str)
 	if nil != err{
-		panic(err) 
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return 
 	}
 
 	index_str := c.PostForm("index")
 	index, err := strconv.Atoi(index_str)
 	if nil != err{
-		panic(err) 
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 
 	info, pageNum, err := database.QueryBlock(index, num)
 	if nil != err{
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"pageNum": pageNum, "blocks": info})
@@ -81,18 +87,21 @@ func getTransaction(c *gin.Context) {
 	num_str := c.PostForm("num")
 	num, err := strconv.Atoi(num_str)
 	if nil != err{
-		panic(err) 
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 
 	index_str := c.PostForm("index")
 	index, err := strconv.Atoi(index_str)
 	if nil != err{
-		panic(err) 
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 
 	info, pageNum, err := database.QueryTransaction(index, num)
 	if nil != err{
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"pageNum": pageNum, "transactions": info})
@@ -102,19 +111,22 @@ func addBlock(c *gin.Context) {
 	height_str := c.PostForm("Height")
 	height, err := strconv.Atoi(height_str)
 	if nil != err{
-		panic(err) 
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 
 	time_str := c.PostForm("TimeStamp")
 	timeStamp, err := strconv.Atoi(time_str)
 	if nil != err{
-		panic(err) 
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 	
 	countTxs_str := c.PostForm("CountTxs")
 	countTxs, err := strconv.Atoi(countTxs_str)
 	if nil != err{
-		panic(err) 
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 
 	hash := c.PostForm("Hash")
@@ -124,6 +136,7 @@ func addBlock(c *gin.Context) {
 	errcode := database.AddBlock(height, countTxs, timeStamp, hash, prevHash, merkleHash, stateHash)
 	if nil != errcode{
 		c.JSON(http.StatusBadRequest, gin.H{"result": errcode.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
@@ -134,6 +147,7 @@ func getTransactionByHash(c *gin.Context) {
 	info, err := database.QueryOneTransaction(hash)
 	if nil != err{
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"transaction": info})
@@ -143,19 +157,22 @@ func addTransaction(c *gin.Context) {
 	txType_str := c.PostForm("TxType")
 	txType, err := strconv.Atoi(txType_str)
 	if nil != err{
-		panic(err) 
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 	
 	timeStamp_str := c.PostForm("TimeStamp")
 	timeStamp, err := strconv.Atoi(timeStamp_str)
 	if nil != err{
-		panic(err) 
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 
 	blockHeight_str := c.PostForm("BlockHeight")
 	blockHeight, err := strconv.Atoi(blockHeight_str)
 	if nil != err{
-		panic(err) 
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 
 	hash := c.PostForm("Hash")
@@ -165,6 +182,7 @@ func addTransaction(c *gin.Context) {
 	errcode := database.AddTransaction(txType, timeStamp, blockHeight, hash, permission, txFrom, address)
 	if nil != errcode{
 		c.JSON(http.StatusBadRequest, gin.H{"result": errcode.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
@@ -174,12 +192,14 @@ func getTransactionByHeight(c *gin.Context) {
 	height_str := c.PostForm("blockHeight")
 	blockHeight, err := strconv.Atoi(height_str)
 	if nil != err{
-		panic(err) 
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 	
 	info, err := database.QueryTransactionsByHeight(blockHeight)
 	if nil != err{
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
 	}
 
 	/*datas := []data.TransactionInfoH{}
@@ -188,4 +208,30 @@ func getTransactionByHeight(c *gin.Context) {
 	}*/
 
 	c.JSON(http.StatusOK, gin.H{"counts": len(info), "transactions": info})
+}
+
+func getTransactionsByAccountName(c *gin.Context) {
+	name := c.PostForm("name")
+
+	num_str := c.PostForm("num")
+	num, err := strconv.Atoi(num_str)
+	if nil != err{
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
+	}
+
+	index_str := c.PostForm("index")
+	index, err := strconv.Atoi(index_str)
+	if nil != err{
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
+	}
+
+	info, pageNum, err := database.QueryTransactionsByAccountName(num, index, name)
+	if nil != err {
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"pageNums": pageNum, "transactions": info})
 }

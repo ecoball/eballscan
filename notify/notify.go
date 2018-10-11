@@ -63,7 +63,7 @@ func handleBlock(info []byte) error {
 	for _, v := range oneBlock.Transactions {
 		if err := database.AddTransaction(int(v.Type), int(v.TimeStamp), int(oneBlock.Height), common.ToHex(v.Hash.Bytes()),
 			v.Permission, v.From.String(), v.Addr.String()); nil != err {
-			log.Fatal(err)
+			//log.Fatal(err)
 			return err
 		}
 		data.AddTransaction(common.ToHex(v.Hash.Bytes()), &data.TransactionInfo{int(v.Type), time.Unix(v.TimeStamp/1000000000, 0).Format("2006-01-02 15:04:05"),
