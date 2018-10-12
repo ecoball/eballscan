@@ -119,13 +119,6 @@ func AddBlock(height, countTxs, timestamp int, hash, prevHash, merkleHash, state
 		return err
 	}
 
-	data.AddBlock(height, &data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp})
-
-	if height > MaxHeight {
-		MaxHeight = height
-		data.Length = height
-	}
-
 	return
 }
 

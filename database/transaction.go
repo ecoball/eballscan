@@ -116,12 +116,12 @@ func QueryOneTransaction(hash string) (*data.TransactionInfo, error) {
 	return &data.TransactionInfo{txType, strconv.Itoa(timeStamp/1e6), permission, txFrom, address, blockHeight}, nil
 }
 
-func QueryTransactionsByAccountName(num, index int, name string)([]*data.TransactionInfoH, int, error) {
+func QueryTransactionsByAccountName(num, index int, name string)([]*data.TransactionInfoH, int, int, error) {
 	var pageNum, counts int
 	sqlStr := "select count(0) from transactions where txFrom = '"
 	sqlStr = sqlStr + name + "' or address = '" + name + "'"
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&counts); nil != err {
-		return nil, -1, err
+		return nil, -1, -1, err
 	}
 	
 	if counts % num == 0{
@@ -137,7 +137,7 @@ func QueryTransactionsByAccountName(num, index int, name string)([]*data.Transac
 	rows, err := cockroachDb.Query(querySql)
 	if err != nil {
 		log.Fatal(err)
-		return nil, -1, err
+		return nil, -1, -1, err
 	}
 	defer rows.Close()
 
@@ -156,7 +156,7 @@ func QueryTransactionsByAccountName(num, index int, name string)([]*data.Transac
 	    transactionInfoH = append(transactionInfoH, &data.TransactionInfoH{data.TransactionInfo{txType, strconv.Itoa(timeStamp/1e6), permission, txFrom, address, blockHeight}, hash})
 	}
 
-	return transactionInfoH, pageNum, nil
+	return transactionInfoH, pageNum, counts, nil
 }
 
 func QueryTransactionsByHeight(blockHeight int)([]*data.TransactionInfoH, error) {

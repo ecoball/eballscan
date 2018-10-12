@@ -37,6 +37,7 @@ func StartHttpServer() (err error) {
 	router.POST("/eballscan/getTransactionByHeight", getTransactionByHeight)
 	router.POST("/eballscan/getTransaction", getTransaction)
 	router.POST("/eballscan/getTransactionsByAccountName", getTransactionsByAccountName)
+	router.POST("/eballscan/getAccounts", getAccounts)
 
 	http.ListenAndServe(":20680", router)
 	return nil
@@ -202,11 +203,6 @@ func getTransactionByHeight(c *gin.Context) {
 		return
 	}
 
-	/*datas := []data.TransactionInfoH{}
-	for _, v := range info {
-		datas = append(datas, *v)
-	}*/
-
 	c.JSON(http.StatusOK, gin.H{"counts": len(info), "transactions": info})
 }
 
@@ -227,11 +223,35 @@ func getTransactionsByAccountName(c *gin.Context) {
 		return
 	}
 
-	info, pageNum, err := database.QueryTransactionsByAccountName(num, index, name)
+	info, pageNum, counts, err := database.QueryTransactionsByAccountName(num, index, name)
 	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"pageNums": pageNum, "transactions": info})
+	c.JSON(http.StatusOK, gin.H{"pageNums": pageNum, "counts": counts, "transactions": info})
+}
+
+func getAccounts(c *gin.Context) {
+	num_str := c.PostForm("num")
+	num, err := strconv.Atoi(num_str)
+	if nil != err{
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
+	}
+
+	index_str := c.PostForm("index")
+	index, err := strconv.Atoi(index_str)
+	if nil != err{
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
+	}
+
+	info, pageNum, err := database.QueryAccounts(num, index)
+	if nil != err {
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"pageNum": pageNum, "accounts": info})
 }

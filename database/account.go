@@ -19,24 +19,30 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"time"
+	//"time"
+	"strconv"
 
 	"github.com/ecoball/eballscan/data"
 	"github.com/muesli/cache2go"
 )
 
 func initAccount() (err error) {
-	// Create the "transactions" table.
+	// Create the "accounts" table.
 	if _, err = cockroachDb.Exec(
 		`create table if not exists accounts(name varchar(70) primary key, 
-		createdAt int, updatedAt int, abi text)`); err != nil {
+		timeStamp int)`); err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	//Load the data of transactions into the cache
+	/*if _, err = cockroachDb.Exec(
+		`drop table if exists accounts`); err != nil {
+		log.Fatal(err)
+		return
+	}*/
+
 	var rows *sql.Rows
-	rows, err = cockroachDb.Query("select name, createdAt, updatedAt, abi from accounts")
+	rows, err = cockroachDb.Query("select name, timeStamp from accounts")
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -45,56 +51,100 @@ func initAccount() (err error) {
 
 	for rows.Next() {
 		var (
-			updatedAt, createdAt     int
-			abi, name string
+			timestamp       int
+			name            string
 		)
 
-		if err = rows.Scan(&name, &createdAt, &updatedAt, &abi); err != nil {
+		if err = rows.Scan(&name, &timestamp); err != nil {
 			log.Fatal(err)
 			break
 		}
+
+		data.AddAccount(name, &data.AccountInfo{timestamp})
 	}
 
-	//set loader
-	data.Transactions.SetDataLoader(func(key interface{}, args ...interface{}) *cache2go.CacheItem {
-		hash, ok := key.(string)
+	data.Accounts.SetDataLoader(func(key interface{}, args ...interface{}) *cache2go.CacheItem {
+		name, ok := key.(string)
 		if !ok {
 			return nil
 		}
 
-		val, err := QueryOneTransaction(hash)
+		val, err := QueryOneAccount(name)
 		if nil != err {
 			return nil
 		}
 
-		item := cache2go.NewCacheItem(hash, data.TRANSACTION_SPAN, *val)
+		item := cache2go.NewCacheItem(name, data.ACCOUNT_SPAN, *val)
 		return item
 	})
 
 	return
 }
 
-func AddAccount(txType, timeStamp, blockHeight int, hash, permission, txFrom, address string) (err error) {
+func AddAccount(name string, timeStamp int)(err error) {
 	var values string
-	values = fmt.Sprintf(`('%s', %d, %d, '%s', '%s', '%s', %d)`, hash, txType, timeStamp, permission, txFrom, address, blockHeight)
-	values = "insert into transactions(hash, txType, timeStamp, permission, txFrom, address, blockHeight) values" + values
+	values = fmt.Sprintf(`('%s', %d)`, name, timeStamp)
+	values = "insert into accounts(name, timeStamp) values" + values
 	_, err = cockroachDb.Exec(values)
 	if nil != err {
-		log.Fatal(err)
+		return err
 	}
 
-	return
+	data.AddAccount(name, &data.AccountInfo{timeStamp})
+
+	return nil
 }
 
-func QueryOneAccount(hash string) (*data.TransactionInfo, error) {
+func QueryOneAccount(name string) (*data.AccountInfo, error) {
 	var (
-		txType, timeStamp, blockHight       int
-		permission, txFrom, address, sqlStr string
+		timeStamp       int
 	)
 
-	sqlStr = "select txType, timeStamp, permission, txFrom, address, blockHight from transactions where hash = '" + hash + "'"
-	if err := cockroachDb.QueryRow(sqlStr).Scan(&txType, &timeStamp, &permission, &txFrom, &address, &blockHight); nil != err {
+	sqlStr := "select timeStamp from accounts where name = '" + name + "'"
+	if err := cockroachDb.QueryRow(sqlStr).Scan(&timeStamp); nil != err {
 		return nil, err
 	}
-	return &data.TransactionInfo{txType, time.Unix(int64(timeStamp), 0).Format("2006-01-02 15:04:05"), permission, txFrom, address, blockHight}, nil
+	return &data.AccountInfo{timeStamp}, nil
+}
+
+
+func QueryAccounts(num, index int) ([]*data.AccountInfoh, int, error) {
+	var pageNum, counts int
+	sqlStr := "select count(0) from accounts"
+	if err := cockroachDb.QueryRow(sqlStr).Scan(&counts); nil != err {
+		return nil, -1, err
+	}
+	
+	if counts % num == 0{
+		pageNum = counts/num
+	}else{
+		pageNum = counts/num + 1
+	}
+
+
+	querySql := "select * from accounts order by timeStamp desc limit " + strconv.Itoa(num) + " offset " + strconv.Itoa((index-1)*num)
+
+	rows, err := cockroachDb.Query(querySql)
+	if err != nil {
+		log.Fatal(err)
+		return nil, -1, err
+	}
+	defer rows.Close()
+
+	accounts := []*data.AccountInfoh{}
+	for rows.Next() {
+		var (
+			timeStamp       int
+			name 			string
+		)
+
+		if err = rows.Scan(&name, &timeStamp); err != nil {
+			log.Fatal(err)
+			break
+		}
+
+	    accounts = append(accounts, &data.AccountInfoh{data.AccountInfo{timeStamp/1e6}, name})
+	}
+
+	return accounts, pageNum, nil
 }

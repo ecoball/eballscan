@@ -53,7 +53,7 @@ func handleBlock(info []byte) error {
 	if err := database.AddBlock(int(oneBlock.Height), int(oneBlock.CountTxs), int(oneBlock.TimeStamp), common.ToHex(oneBlock.Hash.Bytes()), common.ToHex(oneBlock.PrevHash.Bytes()),
 		common.ToHex(oneBlock.MerkleHash.Bytes()), common.ToHex(oneBlock.StateHash.Bytes())); nil != err {
 		//log.Fatal(err)
-		return err
+		//return err
 	}
 
 	data.AddBlock(int(oneBlock.Height), &data.BlockInfo{common.ToHex(oneBlock.Hash.Bytes()), common.ToHex(oneBlock.PrevHash.Bytes()),
@@ -64,10 +64,30 @@ func handleBlock(info []byte) error {
 		if err := database.AddTransaction(int(v.Type), int(v.TimeStamp), int(oneBlock.Height), common.ToHex(v.Hash.Bytes()),
 			v.Permission, v.From.String(), v.Addr.String()); nil != err {
 			//log.Fatal(err)
-			return err
+			//return err
 		}
 		data.AddTransaction(common.ToHex(v.Hash.Bytes()), &data.TransactionInfo{int(v.Type), time.Unix(v.TimeStamp/1000000000, 0).Format("2006-01-02 15:04:05"),
 			v.Permission, v.From.String(), v.Addr.String(), int(oneBlock.Height)})
+		
+		if v.Type == 0x02 {//新增账号交易处理
+			info := new(types.InvokeInfo)
+			data, err := v.Payload.Serialize()
+			if err != nil {
+				continue
+			}
+
+			err = info.Deserialize(data)
+			if err != nil {
+				continue
+			}
+
+			if string(info.Method) == "new_account" {
+				if err := database.AddAccount(info.Param[0], int(v.TimeStamp)); nil != err {
+					return err
+				}
+				
+			}
+		}
 	}
 
 	return nil
