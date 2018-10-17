@@ -53,8 +53,8 @@ func handleBlock(info []byte) error {
 	//add block
 	if err := database.AddBlock(int(oneBlock.Height), int(oneBlock.CountTxs), int(oneBlock.TimeStamp), common.ToHex(oneBlock.Hash.Bytes()), common.ToHex(oneBlock.PrevHash.Bytes()),
 		common.ToHex(oneBlock.MerkleHash.Bytes()), common.ToHex(oneBlock.StateHash.Bytes())); nil != err {
-		//log.Fatal(err)
-		//return err
+		log.Fatal(err)
+		return err
 	}
 
 	data.AddBlock(int(oneBlock.Height), &data.BlockInfo{common.ToHex(oneBlock.Hash.Bytes()), common.ToHex(oneBlock.PrevHash.Bytes()),
@@ -64,8 +64,8 @@ func handleBlock(info []byte) error {
 	for _, v := range oneBlock.Transactions {
 		if err := database.AddTransaction(int(v.Type), int(v.TimeStamp), int(oneBlock.Height), common.ToHex(v.Hash.Bytes()),
 			v.Permission, v.From.String(), v.Addr.String()); nil != err {
-			//log.Fatal(err)
-			//return err
+			log.Fatal(err)
+			return err
 		}
 		data.AddTransaction(common.ToHex(v.Hash.Bytes()), &data.TransactionInfo{int(v.Type), time.Unix(v.TimeStamp/1000000000, 0).Format("2006-01-02 15:04:05"),
 			v.Permission, v.From.String(), v.Addr.String(), int(oneBlock.Height)})
@@ -74,16 +74,19 @@ func handleBlock(info []byte) error {
 			info := new(types.InvokeInfo)
 			data, err := v.Payload.Serialize()
 			if err != nil {
-				continue
+				log.Info(err)
+				return err
 			}
 
 			err = info.Deserialize(data)
 			if err != nil {
-				continue
+				log.Info(err)
+				return err
 			}
 
 			if string(info.Method) == "new_account" {
 				if err := database.AddAccount(info.Param[0], "ABA", int(v.TimeStamp), 0); nil != err {
+					log.Fatal(err)
 					return err
 				}
 				
@@ -94,46 +97,48 @@ func handleBlock(info []byte) error {
 			info := new(types.TransferInfo)
 			data, err := v.Payload.Serialize()
 			if err != nil {
-				continue
+				log.Info(err)
+				return err
 			}
 
 			err = info.Deserialize(data)
 			if err != nil {
-				continue
+				log.Info(err)
+				return err
 			}
 
 			amount, err := strconv.Atoi(info.Value.String())
 			if err != nil {
-				continue
+				log.Info(err)
+				return err
 			}
 
 			//from账户余额处理
 			from := v.From.String()
-			if from != "root" {
-				from_balance, err := database.QueryAccountBalance(from)
-				if err != nil {
-					continue
-				}
-				balance := from_balance - amount
-				err = database.UpdateAccountBalance(from, balance)
-				if err != nil {
-					continue
-				}
+			from_balance, err := database.QueryAccountBalance(from)
+			if err != nil {
+				log.Fatal(err)
+				return err
 			}
+			balance := from_balance - amount
+			err = database.UpdateAccountBalance(from, balance)
+			if err != nil {
+				log.Fatal(err)
+				return err
+			}	
 			
 			//to账户余额处理
 			to := v.Addr.String()
-			if to != "root" {
-				to := v.Addr.String()
-				to_balance, err := database.QueryAccountBalance(to)
-				if err != nil {
-					continue
-				}
-				balance := to_balance + amount //to账户余额+
-				err = database.UpdateAccountBalance(to, balance)
-				if err != nil {
-					continue
-				}
+			to_balance, err := database.QueryAccountBalance(to)
+			if err != nil {
+				log.Fatal(err)
+				return err
+			}
+			balance = to_balance + amount //to账户余额+
+			err = database.UpdateAccountBalance(to, balance)
+			if err != nil {
+				log.Fatal(err)
+				return err
 			}
 		}
 	}

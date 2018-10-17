@@ -19,7 +19,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	//"time"
+	"time"
 	"strconv"
 
 	"github.com/ecoball/eballscan/data"
@@ -49,6 +49,7 @@ func initAccount() (err error) {
 	}
 	defer rows.Close()
 
+	root_is_exist := false
 	for rows.Next() {
 		var (
 			timestamp, balance       int
@@ -60,7 +61,18 @@ func initAccount() (err error) {
 			break
 		}
 
+		if "root" == name {
+			root_is_exist = true
+		}
+
 		data.AddAccount(name, &data.AccountInfo{timestamp, balance, token})
+	}
+
+	if !root_is_exist {//自动创建root账户
+		timeStamp := time.Now().UnixNano()
+		if err = AddAccount("root", "ABA", int(timeStamp), 70000); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	data.Accounts.SetDataLoader(func(key interface{}, args ...interface{}) *cache2go.CacheItem {
