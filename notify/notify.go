@@ -18,6 +18,7 @@ package notify
 
 import (
 	"time"
+	"strconv"
 
 	"github.com/ecoball/eballscan/data"
 	"github.com/ecoball/eballscan/database"
@@ -82,10 +83,57 @@ func handleBlock(info []byte) error {
 			}
 
 			if string(info.Method) == "new_account" {
-				if err := database.AddAccount(info.Param[0], int(v.TimeStamp)); nil != err {
+				if err := database.AddAccount(info.Param[0], "ABA", int(v.TimeStamp), 0); nil != err {
 					return err
 				}
 				
+			}
+		}
+
+		if v.Type == 0x03 { //转账交易处理
+			info := new(types.TransferInfo)
+			data, err := v.Payload.Serialize()
+			if err != nil {
+				continue
+			}
+
+			err = info.Deserialize(data)
+			if err != nil {
+				continue
+			}
+
+			amount, err := strconv.Atoi(info.Value.String())
+			if err != nil {
+				continue
+			}
+
+			//from账户余额处理
+			from := v.From.String()
+			if from != "root" {
+				from_balance, err := database.QueryAccountBalance(from)
+				if err != nil {
+					continue
+				}
+				balance := from_balance - amount
+				err = database.UpdateAccountBalance(from, balance)
+				if err != nil {
+					continue
+				}
+			}
+			
+			//to账户余额处理
+			to := v.Addr.String()
+			if to != "root" {
+				to := v.Addr.String()
+				to_balance, err := database.QueryAccountBalance(to)
+				if err != nil {
+					continue
+				}
+				balance := to_balance + amount //to账户余额+
+				err = database.UpdateAccountBalance(to, balance)
+				if err != nil {
+					continue
+				}
 			}
 		}
 	}

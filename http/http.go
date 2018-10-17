@@ -18,6 +18,9 @@ package http
 
 import (
 	"net/http"
+	"bytes"
+	"log"
+	"os/exec" 
 
 	"github.com/gin-gonic/gin"
 	"github.com/ecoball/eballscan/database"
@@ -38,6 +41,7 @@ func StartHttpServer() (err error) {
 	router.POST("/eballscan/getTransaction", getTransaction)
 	router.POST("/eballscan/getTransactionsByAccountName", getTransactionsByAccountName)
 	router.POST("/eballscan/getAccounts", getAccounts)
+	router.POST("/eballscan/getAccountInfo", getAccountInfo)
 
 	http.ListenAndServe(":20680", router)
 	return nil
@@ -254,4 +258,31 @@ func getAccounts(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"pageNum": pageNum, "accounts": info})
+}
+
+func getAccountInfo(c *gin.Context) {
+	name := c.PostForm("name")
+
+	data, err := database.QueryOneAccount(name)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"account": data})
+}
+
+func exec_shell(s string) {
+    cmd := exec.Command("/bin/bash", "-c", s)
+    var out bytes.Buffer
+
+    cmd.Stdout = &out
+    err := cmd.Run()
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+
+func Compile() {
+	exec_shell("cd ../c2wasm-compiler/;./compile.sh api.c api;cd ../eballscan/")
 }

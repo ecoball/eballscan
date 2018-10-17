@@ -30,7 +30,7 @@ func initAccount() (err error) {
 	// Create the "accounts" table.
 	if _, err = cockroachDb.Exec(
 		`create table if not exists accounts(name varchar(70) primary key, 
-		timeStamp int)`); err != nil {
+		timeStamp int, balance int, token varchar(32))`); err != nil {
 		log.Fatal(err)
 		return
 	}
@@ -42,7 +42,7 @@ func initAccount() (err error) {
 	}*/
 
 	var rows *sql.Rows
-	rows, err = cockroachDb.Query("select name, timeStamp from accounts")
+	rows, err = cockroachDb.Query("select name, timeStamp, balance, token from accounts")
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -51,16 +51,16 @@ func initAccount() (err error) {
 
 	for rows.Next() {
 		var (
-			timestamp       int
-			name            string
+			timestamp, balance       int
+			name,token            string
 		)
 
-		if err = rows.Scan(&name, &timestamp); err != nil {
+		if err = rows.Scan(&name, &timestamp, &balance, &token); err != nil {
 			log.Fatal(err)
 			break
 		}
 
-		data.AddAccount(name, &data.AccountInfo{timestamp})
+		data.AddAccount(name, &data.AccountInfo{timestamp, balance, token})
 	}
 
 	data.Accounts.SetDataLoader(func(key interface{}, args ...interface{}) *cache2go.CacheItem {
@@ -81,31 +81,52 @@ func initAccount() (err error) {
 	return
 }
 
-func AddAccount(name string, timeStamp int)(err error) {
+func AddAccount(name, token string, timeStamp, balance int)(err error) {
 	var values string
-	values = fmt.Sprintf(`('%s', %d)`, name, timeStamp)
-	values = "insert into accounts(name, timeStamp) values" + values
+	values = fmt.Sprintf(`('%s', %d, %d, '%s')`, name, timeStamp, balance, token)
+	values = "insert into accounts(name, timeStamp, balance, token) values" + values
 	_, err = cockroachDb.Exec(values)
 	if nil != err {
 		return err
 	}
 
-	data.AddAccount(name, &data.AccountInfo{timeStamp})
+	data.AddAccount(name, &data.AccountInfo{timeStamp, balance, token})
 
 	return nil
 }
 
 func QueryOneAccount(name string) (*data.AccountInfo, error) {
 	var (
-		timeStamp       int
+		timeStamp, balance       int
+		token                    string
 	)
 
-	sqlStr := "select timeStamp from accounts where name = '" + name + "'"
-	if err := cockroachDb.QueryRow(sqlStr).Scan(&timeStamp); nil != err {
+	sqlStr := "select timeStamp, balance, token from accounts where name = '" + name + "'"
+	if err := cockroachDb.QueryRow(sqlStr).Scan(&timeStamp, &balance, &token); nil != err {
 		return nil, err
 	}
-	return &data.AccountInfo{timeStamp}, nil
+	return &data.AccountInfo{timeStamp/1e6, balance, token}, nil
 }
+
+func QueryAccountBalance(name string) (int, error) {
+	var balance       int
+
+	sqlStr := "select balance from accounts where name = '" + name + "'"
+	if err := cockroachDb.QueryRow(sqlStr).Scan(&balance); nil != err {
+		return -1, err
+	}
+	return balance, nil
+}
+
+func UpdateAccountBalance(name string, balance int) error {
+	sqlStr := "update accounts set balance = " + strconv.Itoa(balance) + " where name = '" + name + "'"
+	_, err := cockroachDb.Exec(sqlStr)
+	if nil != err {
+		return err
+	}
+	return nil
+}
+
 
 
 func QueryAccounts(num, index int) ([]*data.AccountInfoh, int, error) {
@@ -134,16 +155,16 @@ func QueryAccounts(num, index int) ([]*data.AccountInfoh, int, error) {
 	accounts := []*data.AccountInfoh{}
 	for rows.Next() {
 		var (
-			timeStamp       int
-			name 			string
+			timeStamp, balance       int
+			name, token 			string
 		)
 
-		if err = rows.Scan(&name, &timeStamp); err != nil {
+		if err = rows.Scan(&name, &timeStamp, &balance, &token); err != nil {
 			log.Fatal(err)
 			break
 		}
 
-	    accounts = append(accounts, &data.AccountInfoh{data.AccountInfo{timeStamp/1e6}, name})
+	    accounts = append(accounts, &data.AccountInfoh{data.AccountInfo{timeStamp/1e6, balance, token}, name})
 	}
 
 	return accounts, pageNum, nil
