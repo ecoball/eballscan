@@ -32,8 +32,11 @@ then
 fi
 
 #operation of database
-if [ ! -e "./build/cockroach-data"]
+if [ ! -e "./build/cockroach-data" ]
 then
+    #stop cockroachdb
+    killall cockroach
+
     #start cockroachdb
     cd ./build/ && cockroach start --insecure --http-port=8081 --background && cd ../
     if [ 0 -ne $? ]; then
