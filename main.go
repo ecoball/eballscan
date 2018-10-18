@@ -17,6 +17,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -24,15 +25,63 @@ import (
 	"github.com/ecoball/eballscan/http"
 	"github.com/ecoball/eballscan/onlooker"
 	"github.com/ecoball/go-ecoball/common/elog"
+	"github.com/urfave/cli"
 )
 
-var log = elog.NewLogger("eballscan", elog.DebugLog)
+var (
+	log          = elog.NewLogger("eballscan", elog.DebugLog)
+	startCommand = cli.Command{
+		Name:   "start",
+		Usage:  "start eballscan service",
+		Action: stratServive,
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "ecoball-ip, i",
+				Usage: "ecoball full node iP address",
+				Value: "localhost",
+			},
+			cli.IntFlag{
+				Name:  "ecoball-bystander-port, p",
+				Usage: "ecoball listen port",
+				Value: 9000,
+			},
+		},
+	}
+)
 
 func main() {
-	go onlooker.Bystander()
+	app := cli.NewApp()
+
+	//set attribute of EcoBall
+	app.Name = "eballscan"
+	app.HelpName = "eballscan"
+	app.Usage = "Blockchain browser from QuakerChain Technology"
+	app.UsageText = "Eballscan is a high concurrency and fast response blockchain browser"
+	app.Copyright = "2018 ecoball. All rights reserved"
+	app.Author = "EcoBall"
+	app.Email = "service@ecoball.org"
+	app.HideHelp = true
+	app.HideVersion = true
+
+	//commands
+	app.Commands = []cli.Command{
+		startCommand,
+	}
+
+	//run
+	app.Run(os.Args)
+}
+
+func stratServive(c *cli.Context) error {
+	ip := c.String("ecoball-ip")
+	port := c.Int("ecoball-bystander-port")
+	address := fmt.Sprintf(ip+":%d", port)
+
+	go onlooker.Bystander(address)
 	go http.StartHttpServer()
 
 	wait()
+	return nil
 }
 
 //capture single

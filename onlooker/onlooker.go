@@ -31,12 +31,12 @@ var (
 	Conn net.Conn
 )
 
-func Bystander() {
+func Bystander(address string) {
 	//Connect to server node
 	var err error
-	Conn, err = net.Dial("tcp", "127.0.0.1:9000")
+	Conn, err = net.Dial("tcp", address)
 	if err != nil {
-		log.Error("explorer server net.Dial error: ", err)
+		log.Error("explorer server net.Dial "+address+" error: ", err)
 		os.Exit(1)
 	}
 
