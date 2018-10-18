@@ -34,6 +34,8 @@ var (
 
 type AccountInfo struct {
 	TimeStamp       int
+	Balance 		int
+	Token 			string
 }
 type AccountInfoh struct {
 	AccountInfo

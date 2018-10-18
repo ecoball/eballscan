@@ -50,18 +50,6 @@ func initBlock() (err error) {
 		return
 	}*/
 
-	/*if _, err = cockroachDb.Exec(
-		`create sequence if not exists blocks_id_seq   
-		minvalue 1  
-		maxvalue 9223372036854775807  
-		start 1  
-		increment 1  
-		cache 1;
-		`); err != nil {
-		log.Fatal(err)
-		return
-	}*/
-
 	//Load the data of blocks into the cache
 	var rows *sql.Rows
 	rows, err = cockroachDb.Query("select height, timeStamp, hash, prevHash, merkleHash, stateHash, countTxs from blocks")
