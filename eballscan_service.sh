@@ -35,7 +35,10 @@ fi
 if [ ! -e "./build/cockroach-data" ]
 then
     #stop cockroachdb
-    killall cockroach
+    if [ 2 -eq $(ps -ef | grep cockroach | wc -l) ]
+    then
+        killall cockroach
+    fi
 
     #start cockroachdb
     cd ./build/ && cockroach start --insecure --http-port=8081 --background && cd ../
