@@ -44,6 +44,7 @@ then
     if [ 2 -eq $(ps -ef | grep cockroach | wc -l) ]
     then
         killall cockroach
+	sleep 5s 
     fi
 
     #start cockroachdb
