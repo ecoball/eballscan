@@ -32,8 +32,14 @@ then
 fi
 
 #operation of database
-if [ ! -e "./build/cockroach-data" ]
+if [ ! -e "./build/cockroach-data" -o 2 -ne $(ps -ef | grep cockroach | wc -l) ]
 then
+    #remove old data
+    if [ -e "./build/cockroach-data" ]
+    then
+        rm -fr "./build/cockroach-data"
+    fi
+
     #stop cockroachdb
     if [ 2 -eq $(ps -ef | grep cockroach | wc -l) ]
     then
