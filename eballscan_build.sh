@@ -59,40 +59,6 @@ if [ ! -e "/usr/local/bin/cockroach" ]; then
     fi
 fi
 
-#start cockroachdb
-if ! mkdir -p ./build
-then
-    echo -e "\033[;31m create directory failed!!! \033[0m"
-    exit 1
-fi
-
-cd ./build/ && cockroach start --insecure --http-port=8081 --background && cd ../
-if [ 0 -ne $? ]; then
-    echo  -e "\033[;31m start cockroach failed!!! \033[0m"
-    exit 1
-fi
-
-#create user eballscan
-cockroach user set eballscan --insecure
-if [ 0 -ne $? ]; then
-    echo  -e "\033[;31m create user eballscan failed!!! \033[0m"
-    exit 1
-fi
-
-#create database blockchain
-cockroach sql --insecure -e 'create database blockchain'
-if [ 0 -ne $? ]; then
-    echo  -e "\033[;31m create database blockchain failed!!! \033[0m"
-    exit 1
-fi
-
-#grant eballscan
-cockroach sql --insecure -e 'GRANT ALL ON DATABASE blockchain TO eballscan'
-if [ 0 -ne $? ]; then
-    echo  -e "\033[;31m grant eballscan failed!!! \033[0m"
-    exit 1
-fi
-
 #build project
 if ! make
 then
