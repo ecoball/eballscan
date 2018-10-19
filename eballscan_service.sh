@@ -80,4 +80,4 @@ then
 fi
 
 #start eballscan
-${SOURCE_DIR}/build/eballscan
+${SOURCE_DIR}/build/eballscan start
