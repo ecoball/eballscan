@@ -80,4 +80,20 @@ then
 fi
 
 #start eballscan
-${SOURCE_DIR}/build/eballscan start
+case $# in
+    0)
+    ${SOURCE_DIR}/build/eballscan start
+    ;;
+
+    1)
+    ${SOURCE_DIR}/build/eballscan start -i $1
+    ;;
+
+    2)
+    ${SOURCE_DIR}/build/eballscan start -i $1 -p $2
+    ;;
+
+    *)
+    echo "please input eballscan_service | eballscan_service param1(ecoball-ip) | eballscan_service param1(ecoball-ip) param2(ecoball-bystander-port)"
+    ;;
+esac
