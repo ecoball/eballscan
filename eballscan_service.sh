@@ -17,7 +17,7 @@
 # along with the eballscan. If not, see <http://www.gnu.org/licenses/>.
 ############################################################################
 
-SOURCE_DIR=$(cd 'dirname $0' && pwd)
+SOURCE_DIR=$(cd `dirname $0` && pwd)
 
 #check cockroachdb
 if [ ! -e "/usr/local/bin/cockroach" ]
