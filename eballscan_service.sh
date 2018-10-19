@@ -17,6 +17,8 @@
 # along with the eballscan. If not, see <http://www.gnu.org/licenses/>.
 ############################################################################
 
+SOURCE_DIR=$(cd 'dirname $0' && pwd)
+
 #check cockroachdb
 if [ ! -e "/usr/local/bin/cockroach" ]
 then
@@ -25,19 +27,19 @@ then
 fi
 
 #check eballscan
-if [ ! -e "./build/eballscan" ] 
+if [ ! -e "${SOURCE_DIR}/build/eballscan" ] 
 then
     echo -e "\033[;31mThe eballscan does not exist!!! \033[0m"
     exit 1
 fi
 
 #operation of database
-if [ ! -e "./build/cockroach-data" -o 2 -ne $(ps -ef | grep cockroach | wc -l) ]
+if [ ! -e "${SOURCE_DIR}/build/cockroach-data" -o 2 -ne $(ps -ef | grep cockroach | wc -l) ]
 then
     #remove old data
-    if [ -e "./build/cockroach-data" ]
+    if [ -e "${SOURCE_DIR}/build/cockroach-data" ]
     then
-        rm -fr "./build/cockroach-data"
+        rm -fr "${SOURCE_DIR}/build/cockroach-data"
     fi
 
     #stop cockroachdb
@@ -48,7 +50,8 @@ then
     fi
 
     #start cockroachdb
-    cd ./build/ && cockroach start --insecure --http-port=8081 --background && cd ../
+    CURRENT_DIR=$(pwd)
+    cd ${SOURCE_DIR}/build/ && cockroach start --insecure --http-port=8081 --background && cd $CURRENT_DIR
     if [ 0 -ne $? ]; then
         echo  -e "\033[;31m start cockroach failed!!! \033[0m"
         exit 1
@@ -77,4 +80,4 @@ then
 fi
 
 #start eballscan
-./build/eballscan
+${SOURCE_DIR}/build/eballscan

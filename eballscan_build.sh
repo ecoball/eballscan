@@ -16,16 +16,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the eballscan. If not, see <http://www.gnu.org/licenses/>.
 ############################################################################
+SOURCE_DIR=$(cd 'dirname $0' && pwd)
 
 #clean old install
-if [ -d "./build" ]; then
+if [ -d "${SOURCE_DIR}/build" ]; then
     echo -e "\033[;33m old eballscan and cockroach-data needs to be removed.\033[0m"
     echo -e "\033[;33m Do you wish to remove this install?\033[0m"
     select yn in "Yes" "No"; do
         echo $yn
         case $yn in
             [Yy]* )
-                if ! rm -fr "./build/"
+                if ! rm -fr "${SOURCE_DIR}/build/"
                 then
                     echo  -e "\033[;31m remove ./build/ failed!!! \033[0m"
                     exit 1
@@ -60,7 +61,7 @@ if [ ! -e "/usr/local/bin/cockroach" ]; then
 fi
 
 #build project
-if ! make
+if ! make -C ${SOURCE_DIR}
 then
     echo  -e "\033[;31m compile eballscan failed!!! \033[0m"
     exit 1
