@@ -38,7 +38,7 @@ var (
 			cli.StringFlag{
 				Name:  "ecoball-ip, i",
 				Usage: "ecoball full node iP address",
-				Value: "localhost",
+				Value: "127.0.0.1",
 			},
 			cli.IntFlag{
 				Name:  "ecoball-bystander-port, p",
