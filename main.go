@@ -43,7 +43,7 @@ var (
 			cli.IntFlag{
 				Name:  "ecoball-bystander-port, p",
 				Usage: "ecoball listen port",
-				Value: 9000,
+				Value: 9001,
 			},
 		},
 	}
