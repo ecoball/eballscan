@@ -51,7 +51,7 @@ func Bystander(address string) {
 			continue
 		}
 
-		one := info.OneNotify{info.InfoNil, []byte{}}
+		one := info.OneNotify{info.InfoNil, []byte{}, 0}
 		if err := one.Deserialize(buf[:n]); nil != err {
 			log.Error("explorer server notify.Deserialize error: ", err)
 			continue
