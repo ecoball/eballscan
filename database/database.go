@@ -56,4 +56,34 @@ func init() {
 		log.Fatal("initialize account error: ", err)
 		os.Exit(1)
 	}
+
+	err = initCommittee_block()
+	if err != nil {
+		log.Fatal("initialize Committee_block error: ", err)
+		os.Exit(1)
+	}
+
+	err = initFinal_block()
+	if err != nil {
+		log.Fatal("initialize final_block error: ", err)
+		os.Exit(1)
+	}
+
+	err = initMinor_block()
+	if err != nil {
+		log.Fatal("initialize Minor_block error: ", err)
+		os.Exit(1)
+	}
+
+	err = initNode()
+	if err != nil {
+		log.Fatal("initialize node error: ", err)
+		os.Exit(1)
+	}
+
+	err = initViewchangeblock()
+	if err != nil {
+		log.Fatal("initialize Viewchangeblock error: ", err)
+		os.Exit(1)
+	}
 }

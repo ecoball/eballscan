@@ -17,6 +17,7 @@
 package notify
 
 import (
+	"fmt"
 	"time"
 	"strconv"
 
@@ -26,6 +27,7 @@ import (
 	"github.com/ecoball/go-ecoball/common/elog"
 	"github.com/ecoball/go-ecoball/core/types"
 	"github.com/ecoball/go-ecoball/spectator/info"
+	"github.com/ecoball/go-ecoball/core/shard"
 )
 
 var (
@@ -35,13 +37,100 @@ var (
 func Dispatch(one info.OneNotify) {
 	switch one.InfoType {
 	case info.InfoBlock:
-		if err := handleBlock(one.Info); nil != err {
-			log.Error("handleBlock error: ", err)
+		switch one.BlockType {
+		case 0:
+			fmt.Println("receive a block")
+			if err := handleBlock(one.Info); nil != err {
+				log.Error("handleBlock error: ", err)
+			}
+			break
+		case uint32(shard.HeCmBlock):
+			fmt.Println("receive a cmblock")
+			if err := handleCommittee_block(one.Info); nil != err {
+				log.Error("handleCommittee_block error: ", err)
+			}
+			break
+		case uint32(shard.HeFinalBlock):
+			fmt.Println("receive a fiblock")
+			if err := handleFinal_block(one.Info); nil != err {
+				log.Error("handleCommittee_block error: ", err)
+			}
+			break
+		case uint32(shard.HeMinorBlock):
+			fmt.Println("receive a minblock")
+			if err := handleMinor_block(one.Info); nil != err {
+				log.Error("handleCommittee_block error: ", err)
+			}
+			break
+		case uint32(shard.HeViewChange):
+
 		}
+
 	default:
 
 	}
 }
+
+func handleCommittee_block(info []byte) error {
+	oneBlock := shard.CMBlock{}
+	if err := oneBlock.Deserialize(info); nil != err {
+		log.Fatal(err)
+	}
+
+	//add nodes
+	var nodeCounts int = 0
+	for _, v := range oneBlock.Shards {
+		for _, vv := range v.Member {
+			database.AddNode(common.ToHex(vv.PublicKey), vv.Port, vv.Address, int(oneBlock.Height))
+			nodeCounts++
+		}	
+	}
+
+		//add Committee_blocks
+	database.AddCommittee_block(int(oneBlock.Height), int(oneBlock.Nonce), int(oneBlock.Timestamp), nodeCounts, oneBlock.Hash().HexString(), oneBlock.PrevHash.HexString(),
+		oneBlock.ShardsHash.HexString(), common.ToHex(oneBlock.LeaderPubKey), oneBlock.Candidate.Port, oneBlock.Candidate.Address, common.ToHex(oneBlock.Candidate.PublicKey))
+	return nil
+}
+
+func handleFinal_block(info []byte) error {
+	oneBlock := shard.FinalBlock{}
+	if err := oneBlock.Deserialize(info); nil != err {
+		log.Fatal(err)
+	}
+
+	database.AddFinal_block(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.TrxCount), int(oneBlock.EpochNo), oneBlock.Hash().HexString(),
+							oneBlock.PrevHash.HexString(), oneBlock.CMBlockHash.HexString(), oneBlock.TrxRootHash.HexString(), oneBlock.StateDeltaRootHash.HexString(),
+						oneBlock.MinorBlocksHash.HexString(), oneBlock.StateHashRoot.HexString(), common.ToHex(oneBlock.ProposalPubKey))
+
+	return nil
+}
+
+func handleMinor_block(info []byte) error {
+	oneBlock := shard.MinorBlock{}
+	if err := oneBlock.Deserialize(info); nil != err {
+		log.Fatal(err)
+	}
+
+	database.AddMinor_block(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.ShardId), int(oneBlock.CMEpochNo), oneBlock.Hash().HexString(),
+							oneBlock.PrevHash.HexString(), oneBlock.TrxHashRoot.HexString(), oneBlock.StateDeltaHash.HexString(), oneBlock.CMBlockHash.HexString(),
+						    common.ToHex(oneBlock.ProposalPublicKey))
+
+	return nil
+}
+
+func handleViewchangeblock(info []byte) error {
+	oneBlock := shard.ViewChangeBlock{}
+	if err := oneBlock.Deserialize(info); nil != err {
+		log.Fatal(err)
+	}
+
+	database.AddViewchangeblock(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.Round), int(oneBlock.CMEpochNo), int(oneBlock.FinalBlockHeight),
+								oneBlock.Hash().HexString(), oneBlock.PrevHash.HexString(), oneBlock.Candidate.Port, 
+								oneBlock.Candidate.Address, common.ToHex(oneBlock.Candidate.PublicKey))
+
+	return nil
+}
+
 
 func handleBlock(info []byte) error {
 	oneBlock := types.Block{}

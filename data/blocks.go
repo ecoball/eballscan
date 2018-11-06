@@ -30,7 +30,7 @@ const (
 )
 
 var (
-	Blocks          = cache2go.Cache("Accounts")
+	Blocks          = cache2go.Cache("Blcoks")
 	log             = elog.NewLogger("data", elog.DebugLog)
 	
 	Length          int

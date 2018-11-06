@@ -61,7 +61,7 @@ func initBlock() (err error) {
 
 	for rows.Next() {
 		var (
-			height, countTxs, timestamp       int
+			height, countTxs, timestamp   int
 			hash, prevHash, merkleHash, stateHash string
 		)
 
@@ -112,7 +112,7 @@ func AddBlock(height, countTxs, timestamp int, hash, prevHash, merkleHash, state
 
 func QueryOneBlock(height int) (*data.BlockInfo, int, error) {
 	var (
-		countTxs, timestamp,max_height          int
+		countTxs, timestamp, max_height          int
 		hash, prevHash, merkleHash, stateHash, sqlStr string
 	)
 
