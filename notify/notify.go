@@ -39,11 +39,15 @@ func Dispatch(one info.OneNotify) {
 	case info.InfoBlock:
 		switch one.BlockType {
 		case 0:
-			fmt.Println("receive a block")
 			if err := handleBlock(one.Info); nil != err {
 				log.Error("handleBlock error: ", err)
 			}
 			break
+		default:
+			
+		}
+	case info.ShardBlock:
+		switch one.BlockType {
 		case uint32(shard.HeCmBlock):
 			fmt.Println("receive a cmblock")
 			if err := handleCommittee_block(one.Info); nil != err {
@@ -63,7 +67,13 @@ func Dispatch(one info.OneNotify) {
 			}
 			break
 		case uint32(shard.HeViewChange):
-
+			fmt.Println("receive a ViewChangeblock")
+			if err := handleViewchangeblock(one.Info); nil != err {
+				log.Error("handleCommittee_block error: ", err)
+			}
+			break
+		default:
+		
 		}
 
 	default:
@@ -81,14 +91,20 @@ func handleCommittee_block(info []byte) error {
 	var nodeCounts int = 0
 	for _, v := range oneBlock.Shards {
 		for _, vv := range v.Member {
-			database.AddNode(common.ToHex(vv.PublicKey), vv.Port, vv.Address, int(oneBlock.Height))
+			if err := database.AddNode(common.ToHex(vv.PublicKey), vv.Port, vv.Address, int(oneBlock.Height)); nil != err{
+				return err
+			}
 			nodeCounts++
 		}	
 	}
 
 		//add Committee_blocks
-	database.AddCommittee_block(int(oneBlock.Height), int(oneBlock.Nonce), int(oneBlock.Timestamp), nodeCounts, oneBlock.Hash().HexString(), oneBlock.PrevHash.HexString(),
+	err := database.AddCommittee_block(int(oneBlock.Height), int(oneBlock.Nonce), int(oneBlock.Timestamp), nodeCounts, oneBlock.Hash().HexString(), oneBlock.PrevHash.HexString(),
 		oneBlock.ShardsHash.HexString(), common.ToHex(oneBlock.LeaderPubKey), oneBlock.Candidate.Port, oneBlock.Candidate.Address, common.ToHex(oneBlock.Candidate.PublicKey))
+	
+		if err != nil{
+		return err
+	}
 	return nil
 }
 
@@ -98,9 +114,12 @@ func handleFinal_block(info []byte) error {
 		log.Fatal(err)
 	}
 
-	database.AddFinal_block(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.TrxCount), int(oneBlock.EpochNo), oneBlock.Hash().HexString(),
+	err := database.AddFinal_block(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.TrxCount), int(oneBlock.EpochNo), oneBlock.Hash().HexString(),
 							oneBlock.PrevHash.HexString(), oneBlock.CMBlockHash.HexString(), oneBlock.TrxRootHash.HexString(), oneBlock.StateDeltaRootHash.HexString(),
 						oneBlock.MinorBlocksHash.HexString(), oneBlock.StateHashRoot.HexString(), common.ToHex(oneBlock.ProposalPubKey))
+	if nil != err{
+		return err
+	}
 
 	return nil
 }
@@ -111,9 +130,12 @@ func handleMinor_block(info []byte) error {
 		log.Fatal(err)
 	}
 
-	database.AddMinor_block(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.ShardId), int(oneBlock.CMEpochNo), oneBlock.Hash().HexString(),
+	err := database.AddMinor_block(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.ShardId), int(oneBlock.CMEpochNo), oneBlock.Hash().HexString(),
 							oneBlock.PrevHash.HexString(), oneBlock.TrxHashRoot.HexString(), oneBlock.StateDeltaHash.HexString(), oneBlock.CMBlockHash.HexString(),
-						    common.ToHex(oneBlock.ProposalPublicKey))
+							common.ToHex(oneBlock.ProposalPublicKey))
+	if nil != err{
+		return err
+	}
 
 	return nil
 }
@@ -124,9 +146,11 @@ func handleViewchangeblock(info []byte) error {
 		log.Fatal(err)
 	}
 
-	database.AddViewchangeblock(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.Round), int(oneBlock.CMEpochNo), int(oneBlock.FinalBlockHeight),
+	if err := database.AddViewchangeblock(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.Round), int(oneBlock.CMEpochNo), int(oneBlock.FinalBlockHeight),
 								oneBlock.Hash().HexString(), oneBlock.PrevHash.HexString(), oneBlock.Candidate.Port, 
-								oneBlock.Candidate.Address, common.ToHex(oneBlock.Candidate.PublicKey))
+								oneBlock.Candidate.Address, common.ToHex(oneBlock.Candidate.PublicKey)); nil != err{
+		return err
+	}
 
 	return nil
 }

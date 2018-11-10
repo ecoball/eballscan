@@ -26,7 +26,7 @@ import (
 )
 
 var (
-	//MaxHeight int
+	Max_Committee_Height int
 	curr_max_committee_height int
 )
 
@@ -42,6 +42,13 @@ func initCommittee_block() (err error) {
 	sqlStr := "select count(0) from committee_blocks"
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&curr_max_committee_height); nil != err {
 		return err
+	}
+
+	if curr_max_committee_height > 0{
+		sqlStr = "select max(height) from committee_blocks"
+		if err := cockroachDb.QueryRow(sqlStr).Scan(&Max_Committee_Height); nil != err {
+			return err
+		}
 	}
 
 	/*if _, err = cockroachDb.Exec(

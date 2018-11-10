@@ -26,7 +26,7 @@ import (
 )
 
 var (
-	//MaxHeight int
+	Max_ViewChange_Height int
 	curr_max_view_change_height int
 )
 
@@ -44,6 +44,19 @@ func initViewchangeblock() (err error) {
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&curr_max_view_change_height); nil != err {
 		return err
 	}
+
+	if curr_max_view_change_height > 0{
+		sqlStr = "select max(height) from viewchangeblocks"
+		if err := cockroachDb.QueryRow(sqlStr).Scan(&Max_ViewChange_Height); nil != err {
+			return err
+		}
+	}
+
+	/*if _, err = cockroachDb.Exec(
+		`drop table if exists viewchangeblocks`); err != nil {
+		log.Fatal(err)
+		return
+	}*/
 
 	return
 }

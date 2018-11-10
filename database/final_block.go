@@ -26,7 +26,7 @@ import (
 )
 
 var (
-	//MaxHeight int
+	Max_Final_Height int
 	curr_max_final_height int
 )
 
@@ -44,6 +44,19 @@ func initFinal_block() (err error) {
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&curr_max_final_height); nil != err {
 		return err
 	}
+
+	if curr_max_final_height > 0 {
+		sqlStr = "select max(height) from final_blocks"
+		if err := cockroachDb.QueryRow(sqlStr).Scan(&Max_Final_Height); nil != err {
+			return err
+		}
+	}
+
+	/*if _, err = cockroachDb.Exec(
+		`drop table if exists final_blocks`); err != nil {
+		log.Fatal(err)
+		return
+	}*/
 
 	return
 }
