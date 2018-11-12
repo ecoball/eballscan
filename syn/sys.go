@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"net"
 
-	"github.com/ecoball/eballscan/database"
 	"github.com/ecoball/go-ecoball/common/elog"
 	"github.com/ecoball/go-ecoball/spectator/info"
 )
@@ -43,9 +42,65 @@ func (this *BlockHeight) Type() uint32 {
 	return 0
 }
 
-func SynBlocks(conn net.Conn) {
-	height := BlockHeight(database.MaxHeight)
-	oneNotify, err := info.NewOneNotify(info.SynBlock, &height)
+type CommitteeHeight int
+
+func (this *CommitteeHeight) Serialize() ([]byte, error) {
+	return json.Marshal(*this)
+}
+
+func (this *CommitteeHeight) Deserialize(data []byte) error {
+	return json.Unmarshal(data, this)
+}
+
+func (this *CommitteeHeight) Type() uint32 {
+	return 1
+}
+
+type FinalHeight int
+
+func (this *FinalHeight) Serialize() ([]byte, error) {
+	return json.Marshal(*this)
+}
+
+func (this *FinalHeight) Deserialize(data []byte) error {
+	return json.Unmarshal(data, this)
+}
+
+func (this *FinalHeight) Type() uint32 {
+	return 2
+}
+
+type MinorHeight int
+
+func (this *MinorHeight) Serialize() ([]byte, error) {
+	return json.Marshal(*this)
+}
+
+func (this *MinorHeight) Deserialize(data []byte) error {
+	return json.Unmarshal(data, this)
+}
+
+func (this *MinorHeight) Type() uint32 {
+	return 3
+}
+
+type ViewChangeHeight int
+
+func (this *ViewChangeHeight) Serialize() ([]byte, error) {
+	return json.Marshal(*this)
+}
+
+func (this *ViewChangeHeight) Deserialize(data []byte) error {
+	return json.Unmarshal(data, this)
+}
+
+func (this *ViewChangeHeight) Type() uint32 {
+	return 4
+}
+
+func SynBlocks(conn net.Conn, message info.NotifyInfo) {
+	//height := BlockHeight(database.MaxHeight)
+	oneNotify, err := info.NewOneNotify(info.SynBlock, message)
 	if nil != err {
 		log.Error("SynBlocks newOneNotify error: ", err)
 		return

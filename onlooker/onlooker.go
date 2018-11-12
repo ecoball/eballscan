@@ -24,6 +24,7 @@ import (
 	"github.com/ecoball/eballscan/syn"
 	"github.com/ecoball/go-ecoball/common/elog"
 	"github.com/ecoball/go-ecoball/spectator/info"
+	"github.com/ecoball/eballscan/database"
 )
 
 var (
@@ -41,7 +42,20 @@ func Bystander(address string) {
 	}
 
 	//synchronous data
-	go syn.SynBlocks(Conn)
+	heigt := syn.BlockHeight(database.MaxHeight)
+	go syn.SynBlocks(Conn, &heigt)
+
+	committeeHeight := syn.CommitteeHeight(database.Max_Committee_Height)
+	go syn.SynBlocks(Conn, &committeeHeight)
+
+	finalHeight := syn.FinalHeight(database.Max_Final_Height)
+	go syn.SynBlocks(Conn, &finalHeight)
+
+	minorHeight := syn.MinorHeight(database.Max_Minor_Height)
+	go syn.SynBlocks(Conn, &minorHeight)
+
+	viewChangeHeight := syn.ViewChangeHeight(database.Max_ViewChange_Height)
+	go syn.SynBlocks(Conn, &viewChangeHeight)
 
 	//Get the notify data and process it
 	for {
