@@ -17,7 +17,6 @@
 package notify
 
 import (
-	"fmt"
 	"time"
 	"strconv"
 
@@ -49,25 +48,21 @@ func Dispatch(one info.OneNotify) {
 	case info.ShardBlock:
 		switch one.BlockType {
 		case uint32(shard.HeCmBlock):
-			fmt.Println("receive a cmblock")
 			if err := handleCommittee_block(one.Info); nil != err {
 				log.Error("handleCommittee_block error: ", err)
 			}
 			break
 		case uint32(shard.HeFinalBlock):
-			fmt.Println("receive a fiblock")
 			if err := handleFinal_block(one.Info); nil != err {
 				log.Error("handleCommittee_block error: ", err)
 			}
 			break
 		case uint32(shard.HeMinorBlock):
-			fmt.Println("receive a minblock")
 			if err := handleMinor_block(one.Info); nil != err {
 				log.Error("handleCommittee_block error: ", err)
 			}
 			break
 		case uint32(shard.HeViewChange):
-			fmt.Println("receive a ViewChangeblock")
 			if err := handleViewchangeblock(one.Info); nil != err {
 				log.Error("handleCommittee_block error: ", err)
 			}
@@ -87,24 +82,27 @@ func handleCommittee_block(info []byte) error {
 		log.Fatal(err)
 	}
 
-	//add nodes
 	var nodeCounts int = 0
+	for _, v := range oneBlock.Shards {
+		nodeCounts += len(v.Member)
+	}
+
+	//add Committee_blocks
+	err := database.AddCommittee_block(int(oneBlock.Height), int(oneBlock.Nonce), int(oneBlock.Timestamp), nodeCounts, oneBlock.Hash().HexString(), oneBlock.PrevHash.HexString(),
+	oneBlock.ShardsHash.HexString(), common.ToHex(oneBlock.LeaderPubKey), oneBlock.Candidate.Port, oneBlock.Candidate.Address, common.ToHex(oneBlock.Candidate.PublicKey))
+	if err != nil{
+		return err
+	}
+
+	//add nodes
 	for _, v := range oneBlock.Shards {
 		for _, vv := range v.Member {
 			if err := database.AddNode(common.ToHex(vv.PublicKey), vv.Port, vv.Address, int(oneBlock.Height)); nil != err{
 				return err
 			}
-			nodeCounts++
 		}	
 	}
 
-		//add Committee_blocks
-	err := database.AddCommittee_block(int(oneBlock.Height), int(oneBlock.Nonce), int(oneBlock.Timestamp), nodeCounts, oneBlock.Hash().HexString(), oneBlock.PrevHash.HexString(),
-		oneBlock.ShardsHash.HexString(), common.ToHex(oneBlock.LeaderPubKey), oneBlock.Candidate.Port, oneBlock.Candidate.Address, common.ToHex(oneBlock.Candidate.PublicKey))
-	
-		if err != nil{
-		return err
-	}
 	return nil
 }
 
@@ -114,10 +112,9 @@ func handleFinal_block(info []byte) error {
 		log.Fatal(err)
 	}
 
-	err := database.AddFinal_block(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.TrxCount), int(oneBlock.EpochNo), oneBlock.Hash().HexString(),
+	if err := database.AddFinal_block(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.TrxCount), int(oneBlock.EpochNo), oneBlock.Hash().HexString(),
 							oneBlock.PrevHash.HexString(), oneBlock.CMBlockHash.HexString(), oneBlock.TrxRootHash.HexString(), oneBlock.StateDeltaRootHash.HexString(),
-						oneBlock.MinorBlocksHash.HexString(), oneBlock.StateHashRoot.HexString(), common.ToHex(oneBlock.ProposalPubKey))
-	if nil != err{
+						oneBlock.MinorBlocksHash.HexString(), oneBlock.StateHashRoot.HexString(), common.ToHex(oneBlock.ProposalPubKey)); nil != err{
 		return err
 	}
 
@@ -130,10 +127,9 @@ func handleMinor_block(info []byte) error {
 		log.Fatal(err)
 	}
 
-	err := database.AddMinor_block(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.ShardId), int(oneBlock.CMEpochNo), oneBlock.Hash().HexString(),
+	if err := database.AddMinor_block(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.ShardId), int(oneBlock.CMEpochNo), oneBlock.Hash().HexString(),
 							oneBlock.PrevHash.HexString(), oneBlock.TrxHashRoot.HexString(), oneBlock.StateDeltaHash.HexString(), oneBlock.CMBlockHash.HexString(),
-							common.ToHex(oneBlock.ProposalPublicKey))
-	if nil != err{
+							common.ToHex(oneBlock.ProposalPublicKey)); nil != err{
 		return err
 	}
 

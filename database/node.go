@@ -33,7 +33,7 @@ var (
 func initNode() (err error) {
 	// Create the "blocks" table.
 	if _, err = cockroachDb.Exec(
-		`create table if not exists nodes (publicKey varchar(70) primary key, port varchar(70), adderss varchar(70), committee_blockHeight int,
+		`create table if not exists nodes (publicKey varchar(150) primary key, port varchar(70), adderss varchar(70), committee_blockHeight int,
 		foreign key(committee_blockHeight) references committee_blocks(height))`); err != nil {
 		log.Fatal(err)
 		return err

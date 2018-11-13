@@ -42,20 +42,7 @@ func Bystander(address string) {
 	}
 
 	//synchronous data
-	heigt := syn.BlockHeight(database.MaxHeight)
-	go syn.SynBlocks(Conn, &heigt)
-
-	committeeHeight := syn.CommitteeHeight(database.Max_Committee_Height)
-	go syn.SynBlocks(Conn, &committeeHeight)
-
-	finalHeight := syn.FinalHeight(database.Max_Final_Height)
-	go syn.SynBlocks(Conn, &finalHeight)
-
-	minorHeight := syn.MinorHeight(database.Max_Minor_Height)
-	go syn.SynBlocks(Conn, &minorHeight)
-
-	viewChangeHeight := syn.ViewChangeHeight(database.Max_ViewChange_Height)
-	go syn.SynBlocks(Conn, &viewChangeHeight)
+	go syn_data(Conn)
 
 	//Get the notify data and process it
 	for {
@@ -70,6 +57,23 @@ func Bystander(address string) {
 			log.Error("explorer server notify.Deserialize error: ", err)
 			continue
 		}
-		go notify.Dispatch(one)
+		notify.Dispatch(one)
 	}
+}
+
+func syn_data(Conn net.Conn){
+	heigt := syn.BlockHeight(database.MaxHeight)
+	syn.SynBlocks(Conn, &heigt)
+
+	committeeHeight := syn.CommitteeHeight(database.Max_Committee_Height)
+	syn.SynBlocks(Conn, &committeeHeight)
+
+	finalHeight := syn.FinalHeight(database.Max_Final_Height)
+	syn.SynBlocks(Conn, &finalHeight)
+
+	/*minorHeight := syn.MinorHeight(database.Max_Minor_Height)
+	syn.SynBlocks(Conn, &minorHeight)*/
+
+	viewChangeHeight := syn.ViewChangeHeight(database.Max_ViewChange_Height)
+	syn.SynBlocks(Conn, &viewChangeHeight)
 }
