@@ -17,6 +17,7 @@
 package notify
 
 import (
+	"fmt"
 	"time"
 	"strconv"
 
@@ -58,6 +59,7 @@ func Dispatch(one info.OneNotify) {
 			}
 			break
 		case uint32(shard.HeMinorBlock):
+			fmt.Println("receive a minorBlock")
 			if err := handleMinor_block(one.Info); nil != err {
 				log.Error("handleCommittee_block error: ", err)
 			}
@@ -133,6 +135,10 @@ func handleMinor_block(info []byte) error {
 		return err
 	}
 
+	if err := handleTransaction(oneBlock.Transactions, oneBlock.Height); nil != err{
+		return err
+	}
+
 	return nil
 }
 
@@ -170,14 +176,23 @@ func handleBlock(info []byte) error {
 		common.ToHex(oneBlock.MerkleHash.Bytes()), common.ToHex(oneBlock.StateHash.Bytes()), int(oneBlock.CountTxs), int(oneBlock.TimeStamp)})
 
 	//add transactions
-	for _, v := range oneBlock.Transactions {
-		if err := database.AddTransaction(int(v.Type), int(v.TimeStamp), int(oneBlock.Height), common.ToHex(v.Hash.Bytes()),
+	if err := handleTransaction(oneBlock.Transactions, oneBlock.Height); nil != err {
+		return err
+	}
+
+	return nil
+}
+
+func handleTransaction(trxs []*types.Transaction, height uint64) error {
+	//add transactions
+	for _, v := range trxs {
+		if err := database.AddTransaction(int(v.Type), int(v.TimeStamp), int(height), common.ToHex(v.Hash.Bytes()),
 			v.Permission, v.From.String(), v.Addr.String()); nil != err {
 			log.Fatal(err)
 			return err
 		}
 		data.AddTransaction(common.ToHex(v.Hash.Bytes()), &data.TransactionInfo{int(v.Type), time.Unix(v.TimeStamp/1000000000, 0).Format("2006-01-02 15:04:05"),
-			v.Permission, v.From.String(), v.Addr.String(), int(oneBlock.Height)})
+			v.Permission, v.From.String(), v.Addr.String(), int(height)})
 		
 		if v.Type == 0x02 {//新增账号交易处理
 			info := new(types.InvokeInfo)
