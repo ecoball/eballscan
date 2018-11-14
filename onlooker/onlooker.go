@@ -57,7 +57,7 @@ func Bystander(address string) {
 			log.Error("explorer server notify.Deserialize error: ", err)
 			continue
 		}
-		notify.Dispatch(one)
+		go notify.Dispatch(one)
 	}
 }
 

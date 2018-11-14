@@ -34,8 +34,7 @@ func initViewchangeblock() (err error) {
 	// Create the "blocks" table.
 	if _, err = cockroachDb.Exec(
 		`create table if not exists viewchangeblocks (height int primary key, timeStamp int,
-		hash varchar(70), prevHash varchar(70), port varchar(70), adderss varchar(70), publicKey varchar(70), Round int, CMEpochNo int, FinalBlockHeight int,
-		foreign key(FinalBlockHeight) references final_blocks(height))`); err != nil {
+		hash varchar(70), prevHash varchar(70), port varchar(70), adderss varchar(70), publicKey varchar(70), Round int, CMEpochNo int, FinalBlockHeight int)`); err != nil {
 		log.Fatal(err)
 		return err
 	}

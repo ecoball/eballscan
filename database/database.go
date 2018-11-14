@@ -44,13 +44,6 @@ func init() {
 		os.Exit(1)
 	}
 
-	//init transaction
-	err = initTransaction()
-	if err != nil {
-		log.Fatal("initialize transaction error: ", err)
-		os.Exit(1)
-	}
-
 	err = initAccount()
 	if err != nil {
 		log.Fatal("initialize account error: ", err)
@@ -84,6 +77,13 @@ func init() {
 	err = initViewchangeblock()
 	if err != nil {
 		log.Fatal("initialize Viewchangeblock error: ", err)
+		os.Exit(1)
+	}
+
+	//init transaction
+	err = initTransaction()
+	if err != nil {
+		log.Fatal("initialize transaction error: ", err)
 		os.Exit(1)
 	}
 }

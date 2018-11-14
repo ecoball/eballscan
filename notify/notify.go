@@ -17,7 +17,6 @@
 package notify
 
 import (
-	"fmt"
 	"time"
 	"strconv"
 
@@ -59,7 +58,6 @@ func Dispatch(one info.OneNotify) {
 			}
 			break
 		case uint32(shard.HeMinorBlock):
-			fmt.Println("receive a minorBlock")
 			if err := handleMinor_block(one.Info); nil != err {
 				log.Error("handleCommittee_block error: ", err)
 			}
