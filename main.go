@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"net"
 
 	"github.com/ecoball/eballscan/http"
 	"github.com/ecoball/eballscan/onlooker"
@@ -29,6 +30,7 @@ import (
 )
 
 var (
+	NodeIp       string
 	log          = elog.NewLogger("eballscan", elog.DebugLog)
 	startCommand = cli.Command{
 		Name:   "start",
@@ -50,6 +52,10 @@ var (
 )
 
 func main() {
+	if err := getLocalIP(); nil != err {
+		return
+	}
+
 	app := cli.NewApp()
 
 	//set attribute of EcoBall
@@ -72,11 +78,32 @@ func main() {
 	app.Run(os.Args)
 }
 
-func stratServive(c *cli.Context) error {
-	ip := c.String("ecoball-ip")
-	port := c.Int("ecoball-bystander-port")
-	address := fmt.Sprintf(ip+":%d", port)
+func getLocalIP() error{
+	addrs, err := net.InterfaceAddrs()
 
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				NodeIp = ipnet.IP.String()
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+func stratServive(c *cli.Context) error {
+	//ip := c.String("ecoball-ip")
+	port := c.Int("ecoball-bystander-port")
+	address := fmt.Sprintf(NodeIp+":%d", port)
+
+	fmt.Println(address)
 	go onlooker.Bystander(address)
 	go http.StartHttpServer()
 
