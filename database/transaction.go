@@ -33,7 +33,7 @@ func initTransaction() (err error) {
 	if _, err = cockroachDb.Exec(
 		`create table if not exists transactions(hash varchar(70) primary key, 
 		txType int, timeStamp int, permission varchar(32), txFrom varchar(32), address varchar(32), blockHeight int,
-		foreign key(blockHeight) references blocks(height))`); err != nil {
+		foreign key(blockHeight) references minor_blocks(height))`); err != nil {
 		log.Fatal(err)
 		return
 	}
