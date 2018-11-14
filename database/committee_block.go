@@ -85,7 +85,7 @@ func QueryOneCommitteeBlock(height int) (*data.Committee_blockInfo, int, error) 
 		return nil, -1, err
 	}
 
-	sqlStr = fmt.Sprintf("%d", max_height)
+	sqlStr = fmt.Sprintf("%d", height)
 	sqlStr = "select timeStamp, hash, prevHash, shardsHash, leaderPubKey, port, adderss, publicKey, nonce, nodeCounts from committee_blocks where height = " + sqlStr
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&timestamp, &hash, &prevHash, &shardsHash, &leaderPubKey, &port, &address, &publicKey, &nonce, &nodeCounts); nil != err {
 		return nil, -1, err

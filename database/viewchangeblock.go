@@ -84,7 +84,7 @@ func QueryOneViewChangeBlock(height int) (*data.ViewChange_blockInfo, int, error
 		return nil, -1, err
 	}
 
-	sqlStr = fmt.Sprintf("%d", max_height)
+	sqlStr = fmt.Sprintf("%d", height)
 	sqlStr = "select timeStamp, hash, prevHash, port, adderss, publicKey, Round, CMEpochNo, FinalBlockHeight from viewchangeblocks where height = " + sqlStr
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&timeStamp, &hash, &prevHash, &port, &address, &publicKey, &Round, &CMEpochNo, &FinalBlockHeight); nil != err {
 		return nil, -1, err
@@ -130,7 +130,7 @@ func QueryViewChangeBlock(index, num int) ([]*data.ViewChange_blockInfoH, int, e
 			break
 		}
 
-		ViewChange_blockInfoH = append(ViewChange_blockInfoH, &data.ViewChange_blockInfoH{data.ViewChange_blockInfo{timeStamp, hash, prevHash, data.NodeInfo{publicKey, address, port},
+		ViewChange_blockInfoH = append(ViewChange_blockInfoH, &data.ViewChange_blockInfoH{data.ViewChange_blockInfo{timeStamp/1e6, hash, prevHash, data.NodeInfo{publicKey, address, port},
 			Round, CMEpochNo, FinalBlockHeight},height})
 	}
 
@@ -161,7 +161,7 @@ func QueryViewChangeBlockByFinalBlockHeight(FinalBlockHeight int)([]*data.ViewCh
 			break
 		}
 
-		ViewChange_blockInfoH = append(ViewChange_blockInfoH, &data.ViewChange_blockInfoH{data.ViewChange_blockInfo{timeStamp, hash, prevHash, data.NodeInfo{publicKey, address, port},
+		ViewChange_blockInfoH = append(ViewChange_blockInfoH, &data.ViewChange_blockInfoH{data.ViewChange_blockInfo{timeStamp/1e6, hash, prevHash, data.NodeInfo{publicKey, address, port},
 			Round, CMEpochNo, FinalBlockHeight},height})
 	}
 

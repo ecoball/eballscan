@@ -86,7 +86,7 @@ func QueryOneFinalBlock(height int) (*data.Final_blockInfo, int, error) {
 		return nil, -1, err
 	}
 
-	sqlStr = fmt.Sprintf("%d", max_height)
+	sqlStr = fmt.Sprintf("%d", height)
 	sqlStr = "select timeStamp, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, TrxCount, ProposalPubKey, EpochNo from final_blocks where height = " + sqlStr
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&timeStamp, &hash, &prevHash, &CMBlockHash, &TrxRootHash, &StateDeltaRootHash, &MinorBlocksHash, &StateHashRoot, &trxCount, &ProposalPubKey, &epochNo); nil != err {
 		return nil, -1, err
@@ -132,7 +132,7 @@ func QueryFinalBlock(index, num int) ([]*data.Final_blockInfoH, int, error) {
 			break
 		}
 
-		Final_blockInfoH = append(Final_blockInfoH, &data.Final_blockInfoH{data.Final_blockInfo{timeStamp, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash,
+		Final_blockInfoH = append(Final_blockInfoH, &data.Final_blockInfoH{data.Final_blockInfo{timeStamp/1e6, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash,
 						MinorBlocksHash, StateHashRoot, trxCount, ProposalPubKey, epochNo},height})
 	}
 

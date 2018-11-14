@@ -86,7 +86,7 @@ func QueryOneMinorBlock(height int) (*data.Minor_blockInfo, int, error) {
 		return nil, -1, err
 	}
 
-	sqlStr = fmt.Sprintf("%d", max_height)
+	sqlStr = fmt.Sprintf("%d", height)
 	sqlStr = "select timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ShardId, ProposalPublicKey, CMEpochNo from minor_blocks where height = " + sqlStr
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&timeStamp, &hash, &prevHash, &TrxHashRoot, &StateDeltaHash, &CMBlockHash, &ShardId, &ProposalPublicKey, &CMEpochNo); nil != err {
 		return nil, -1, err
@@ -132,7 +132,7 @@ func QueryMinorBlock(index, num int) ([]*data.Minor_blockInfoH, int, error) {
 			break
 		}
 
-		Minor_blockInfoH = append(Minor_blockInfoH, &data.Minor_blockInfoH{data.Minor_blockInfo{timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash,
+		Minor_blockInfoH = append(Minor_blockInfoH, &data.Minor_blockInfoH{data.Minor_blockInfo{timeStamp/1e6, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash,
 			ShardId, ProposalPublicKey, CMEpochNo},height})
 	}
 
