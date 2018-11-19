@@ -91,6 +91,7 @@ func handleCommittee_block(info []byte) error {
 	err := database.AddCommittee_block(int(oneBlock.Height), int(oneBlock.Nonce), int(oneBlock.Timestamp), nodeCounts, oneBlock.Hash().HexString(), oneBlock.PrevHash.HexString(),
 	oneBlock.ShardsHash.HexString(), common.ToHex(oneBlock.LeaderPubKey), oneBlock.Candidate.Port, oneBlock.Candidate.Address, common.ToHex(oneBlock.Candidate.PublicKey))
 	if err != nil{
+		log.Error("AddCommittee_block error: ", err)
 		return err
 	}
 
@@ -98,6 +99,7 @@ func handleCommittee_block(info []byte) error {
 	for _, v := range oneBlock.Shards {
 		for _, vv := range v.Member {
 			if err := database.AddNode(common.ToHex(vv.PublicKey), vv.Port, vv.Address, int(oneBlock.Height)); nil != err{
+				log.Error("AddNode error: ", err)
 				return err
 			}
 		}	
