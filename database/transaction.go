@@ -32,8 +32,8 @@ func initTransaction() (err error) {
 	// Create the "transactions" table.
 	if _, err = cockroachDb.Exec(
 		`create table if not exists transactions(hash varchar(70) primary key, 
-		txType int, timeStamp int, permission varchar(32), txFrom varchar(32), address varchar(32), blockHeight int,
-		foreign key(blockHeight) references minor_blocks(height))`); err != nil {
+		txType int, timeStamp int, permission varchar(32), txFrom varchar(32), address varchar(32), blockHeight int, ShardId int,
+		foreign key(blockHeight, ShardId) references minor_blocks(height, ShardId))`); err != nil {
 		log.Fatal(err)
 		return
 	}
@@ -51,7 +51,7 @@ func initTransaction() (err error) {
 
 	//Load the data of transactions into the cache
 	var rows *sql.Rows
-	rows, err = cockroachDb.Query("select hash, txType, timeStamp, permission, txFrom, address, blockHeight from transactions")
+	rows, err = cockroachDb.Query("select hash, txType, timeStamp, permission, txFrom, address, blockHeight, ShardId from transactions")
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -60,11 +60,11 @@ func initTransaction() (err error) {
 
 	for rows.Next() {
 		var (
-			txType, timeStamp, blockHeight     int
+			txType, timeStamp, blockHeight, ShardId     int
 			hash, permission, txFrom, address string
 		)
 
-		if err = rows.Scan(&hash, &txType, &timeStamp, &permission, &txFrom, &address, &blockHeight); err != nil {
+		if err = rows.Scan(&hash, &txType, &timeStamp, &permission, &txFrom, &address, &blockHeight, &ShardId); err != nil {
 			log.Fatal(err)
 			break
 		}
@@ -91,10 +91,10 @@ func initTransaction() (err error) {
 	return
 }
 
-func AddTransaction(txType, timeStamp, blockHeight int, hash, permission, txFrom, address string) (err error) {
+func AddTransaction(txType, timeStamp, blockHeight, ShardId int, hash, permission, txFrom, address string) (err error) {
 	var values string
-	values = fmt.Sprintf(`('%s', %d, %d, '%s', '%s', '%s', %d)`, hash, txType, timeStamp, permission, txFrom, address, blockHeight)
-	values = "insert into transactions(hash, txType, timeStamp, permission, txFrom, address, blockHeight) values" + values
+	values = fmt.Sprintf(`('%s', %d, %d, '%s', '%s', '%s', %d, %d)`, hash, txType, timeStamp, permission, txFrom, address, blockHeight, ShardId)
+	values = "insert into transactions(hash, txType, timeStamp, permission, txFrom, address, blockHeight, ShardId) values" + values
 	_, err = cockroachDb.Exec(values)
 	if nil != err {
 		return err
@@ -131,7 +131,7 @@ func QueryTransactionsByAccountName(num, index int, name string)([]*data.Transac
 	}
 
 
-	querySql := "select * from transactions where txFrom = '"
+	querySql := "select hash, txType, timeStamp, permission, txFrom, address, blockHeight from transactions where txFrom = '"
 	querySql = querySql + name + "' or address = '" + name + "' order by timeStamp desc limit " + strconv.Itoa(num) + " offset " + strconv.Itoa((index-1)*num)
 
 	rows, err := cockroachDb.Query(querySql)
@@ -161,7 +161,7 @@ func QueryTransactionsByAccountName(num, index int, name string)([]*data.Transac
 
 func QueryTransactionsByHeight(blockHeight int)([]*data.TransactionInfoH, error) {
 	sqlStr := fmt.Sprintf("%d", blockHeight)
-	sqlStr = "select * from transactions where blockHeight = " + sqlStr
+	sqlStr = "select hash, txType, timeStamp, permission, txFrom, address, blockHeight from transactions where blockHeight = " + sqlStr
 
 	rows, err := cockroachDb.Query(sqlStr)
 	if err != nil {
@@ -204,7 +204,7 @@ func QueryTransaction(index, num int)([]*data.TransactionInfoH, int, error) {
 		pageNum = current_transactions_num/num + 1
 	}
 
-	sqlStr := "select * from transactions order by timeStamp desc limit "
+	sqlStr := "select hash, txType, timeStamp, permission, txFrom, address, blockHeight from transactions order by timeStamp desc limit "
 	sqlStr = sqlStr + strconv.Itoa(num) + " offset " + strconv.Itoa((index-1)*num)
 
 	rows, err := cockroachDb.Query(sqlStr)

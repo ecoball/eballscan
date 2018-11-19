@@ -38,9 +38,9 @@ func Dispatch(one info.OneNotify) {
 	case info.InfoBlock:
 		switch one.BlockType {
 		case 0:
-			if err := handleBlock(one.Info); nil != err {
+			/*if err := handleBlock(one.Info); nil != err {
 				log.Error("handleBlock error: ", err)
-			}
+			}*/
 			break
 		default:
 			
@@ -133,7 +133,7 @@ func handleMinor_block(info []byte) error {
 		return err
 	}
 
-	if err := handleTransaction(oneBlock.Transactions, oneBlock.Height); nil != err{
+	if err := handleTransaction(oneBlock.Transactions, oneBlock.Height, oneBlock.ShardId); nil != err{
 		return err
 	}
 
@@ -156,7 +156,7 @@ func handleViewchangeblock(info []byte) error {
 }
 
 
-func handleBlock(info []byte) error {
+/*func handleBlock(info []byte) error {
 	oneBlock := types.Block{}
 	if err := oneBlock.Deserialize(info); nil != err {
 		log.Fatal(err)
@@ -179,12 +179,12 @@ func handleBlock(info []byte) error {
 	}
 
 	return nil
-}
+}*/
 
-func handleTransaction(trxs []*types.Transaction, height uint64) error {
+func handleTransaction(trxs []*types.Transaction, height uint64, ShardId uint32) error {
 	//add transactions
 	for _, v := range trxs {
-		if err := database.AddTransaction(int(v.Type), int(v.TimeStamp), int(height), common.ToHex(v.Hash.Bytes()),
+		if err := database.AddTransaction(int(v.Type), int(v.TimeStamp), int(height), int(ShardId), common.ToHex(v.Hash.Bytes()),
 			v.Permission, v.From.String(), v.Addr.String()); nil != err {
 			log.Fatal(err)
 			return err
