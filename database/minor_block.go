@@ -33,9 +33,9 @@ var (
 func initMinor_block() (err error) {
 	// Create the "blocks" table.
 	if _, err = cockroachDb.Exec(
-		`create table if not exists minor_blocks (height int primary key, timeStamp int,
+		`create table if not exists minor_blocks (height int, timeStamp int,
 		hash varchar(70), prevHash varchar(70), TrxHashRoot varchar(70), StateDeltaHash varchar(70), 
-		CMBlockHash varchar(70), ShardId int, ProposalPublicKey varchar(70), CMEpochNo int)`); err != nil {
+		CMBlockHash varchar(70), ShardId int, ProposalPublicKey varchar(70), CMEpochNo int, primary key(height, ShardId))`); err != nil {
 		log.Fatal(err)
 		return err
 	}

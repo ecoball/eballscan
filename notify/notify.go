@@ -54,17 +54,17 @@ func Dispatch(one info.OneNotify) {
 			break
 		case uint32(shard.HeFinalBlock):
 			if err := handleFinal_block(one.Info); nil != err {
-				log.Error("handleCommittee_block error: ", err)
+				log.Error("handleFinal_block error: ", err)
 			}
 			break
 		case uint32(shard.HeMinorBlock):
 			if err := handleMinor_block(one.Info); nil != err {
-				log.Error("handleCommittee_block error: ", err)
+				log.Error("handleMinor_block error: ", err)
 			}
 			break
 		case uint32(shard.HeViewChange):
 			if err := handleViewchangeblock(one.Info); nil != err {
-				log.Error("handleCommittee_block error: ", err)
+				log.Error("handleViewchangeblock error: ", err)
 			}
 			break
 		default:
