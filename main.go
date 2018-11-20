@@ -33,7 +33,7 @@ var (
 	startCommand = cli.Command{
 		Name:   "start",
 		Usage:  "start eballscan service",
-		Action: stratServive,
+		Action: startServive,
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:  "ecoball-ip, i",
@@ -72,7 +72,7 @@ func main() {
 	app.Run(os.Args)
 }
 
-func stratServive(c *cli.Context) error {
+func startServive(c *cli.Context) error {
 	ip := c.String("ecoball-ip")
 	port := c.Int("ecoball-bystander-port")
 	address := fmt.Sprintf(ip+":%d", port)
