@@ -135,7 +135,12 @@ func handleMinor_block(info []byte) error {
 		return err
 	}
 
-	if err := handleTransaction(oneBlock.Transactions, oneBlock.Height, oneBlock.ShardId); nil != err{
+	if len(oneBlock.Transactions) != 0 {
+		println("height ", oneBlock.MinorBlockHeader.Height)
+		println("transactions ", len(oneBlock.Transactions))
+	}
+
+	if err := handleTransaction(oneBlock.Transactions, oneBlock.MinorBlockHeader.Height, oneBlock.MinorBlockHeader.ShardId); nil != err{
 		return err
 	}
 
