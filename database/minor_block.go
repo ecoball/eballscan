@@ -69,7 +69,7 @@ func AddMinor_block(height, timeStamp, ShardId, CMEpochNo, CountTxs int, hash, p
 
 func QueryOneMinorBlock(height, shardId int) (*data.Minor_blockInfo, int, error) {
 	var (
-		max_height, timeStamp, ShardId, CMEpochNo, CountTxs   int
+		max_height, timeStamp, CMEpochNo, CountTxs   int
 		hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ProposalPublicKey, sqlStr string
 	)
 
@@ -80,12 +80,13 @@ func QueryOneMinorBlock(height, shardId int) (*data.Minor_blockInfo, int, error)
 
 	sqlStr = fmt.Sprintf("%d", height)
 	shardStr := fmt.Sprintln("%d", shardId)
-	sqlStr = "select timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ShardId, ProposalPublicKey, CMEpochNo, CountTxs from minor_blocks where height = " + sqlStr
-	sqlStr = sqlStr + " and ShardId = " + shardStr
-	if err := cockroachDb.QueryRow(sqlStr).Scan(&timeStamp, &hash, &prevHash, &TrxHashRoot, &StateDeltaHash, &CMBlockHash, &ShardId, &ProposalPublicKey, &CMEpochNo, &CountTxs); nil != err {
+	sqlStr = "select timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ProposalPublicKey, CMEpochNo, CountTxs from minor_blocks where height=" + sqlStr
+	sqlStr += " and ShardId="
+	sqlStr += shardStr
+	if err := cockroachDb.QueryRow(sqlStr).Scan(&timeStamp, &hash, &prevHash, &TrxHashRoot, &StateDeltaHash, &CMBlockHash, &ProposalPublicKey, &CMEpochNo, &CountTxs); nil != err {
 		return nil, -1, err
 	}
-	return &data.Minor_blockInfo{timeStamp/1e6, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ShardId, ProposalPublicKey, CMEpochNo, CountTxs}, max_height, nil
+	return &data.Minor_blockInfo{timeStamp/1e6, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, shardId, ProposalPublicKey, CMEpochNo, CountTxs}, max_height, nil
 }
 
 func QueryMinorBlock(index, num int) ([]*data.Minor_blockInfoH, int, error) {
