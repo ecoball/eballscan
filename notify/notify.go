@@ -129,7 +129,7 @@ func handleMinor_block(info []byte) error {
 		log.Fatal(err)
 	}
 
-	if err := database.AddMinor_block(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.ShardId), int(oneBlock.CMEpochNo), oneBlock.Hash().HexString(),
+	if err := database.AddMinor_block(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.ShardId), int(oneBlock.CMEpochNo), len(oneBlock.Transactions), oneBlock.Hash().HexString(),
 							oneBlock.PrevHash.HexString(), oneBlock.TrxHashRoot.HexString(), oneBlock.StateDeltaHash.HexString(), oneBlock.CMBlockHash.HexString(),
 							common.ToHex(oneBlock.ProposalPublicKey)); nil != err{
 		return err

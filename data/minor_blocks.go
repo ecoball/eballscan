@@ -45,6 +45,7 @@ type Minor_blockInfo struct {
 	ShardId       int
 	ProposalPublicKey  string
 	CMEpochNo       int
+	CountTxs        int
 }
 type Minor_blockInfoH struct {
 	Minor_blockInfo

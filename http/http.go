@@ -436,8 +436,9 @@ func addMinor_block(c *gin.Context){
 	StateDeltaHash := c.PostForm("StateDeltaHash")
 	CMBlockHash := c.PostForm("CMBlockHash")
 	ProposalPublicKey := c.PostForm("ProposalPublicKey")
+	counts := 1
 	
-	errcode := database.AddMinor_block(Height, timeStamp, ShardId, CMEpochNo,hash, PrevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ProposalPublicKey)
+	errcode := database.AddMinor_block(Height, timeStamp, ShardId, CMEpochNo, counts, hash, PrevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ProposalPublicKey)
 
 	if nil != errcode{
 		c.JSON(http.StatusBadRequest, gin.H{"result": errcode.Error()})
