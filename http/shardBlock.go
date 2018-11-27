@@ -177,7 +177,15 @@ func getMinorBlockByHeight(c *gin.Context) {
 		return
 	}
 
-	info, max_height, err := database.QueryOneMinorBlock(height)
+	shardId_str := c.PostForm("shardId")
+	shardId, err := strconv.Atoi(shardId_str)
+	if nil != err{
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
+	}
+
+
+	info, max_height, err := database.QueryOneMinorBlock(height, shardId)
 	if nil != err{
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
