@@ -26,7 +26,6 @@ import (
 )
 
 var (
-	Max_Minor_Height int
 	curr_max_minor_height int
 )
 
@@ -43,13 +42,6 @@ func initMinor_block() (err error) {
 	sqlStr := "select count(2) from minor_blocks"
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&curr_max_minor_height); nil != err {
 		return err
-	}
-
-	if curr_max_minor_height > 0{
-		sqlStr = "select max(height) from minor_blocks"
-		if err := cockroachDb.QueryRow(sqlStr).Scan(&Max_Minor_Height); nil != err {
-			return err
-		}
 	}
 
 	/*if _, err = cockroachDb.Exec(
@@ -97,7 +89,7 @@ func QueryOneMinorBlock(height int) (*data.Minor_blockInfo, int, error) {
 func QueryMinorBlock(index, num int) ([]*data.Minor_blockInfoH, int, error) {
 	//var rows *sql.Rows
 	if 1 == index{
-		sqlStr := "select max(height) from minor_blocks"
+		sqlStr := "select count(2) from minor_blocks"
 		if err := cockroachDb.QueryRow(sqlStr).Scan(&curr_max_minor_height); nil != err {
 			return nil, -1, err
 		}
