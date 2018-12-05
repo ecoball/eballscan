@@ -34,7 +34,7 @@ func initMinor_block() (err error) {
 	if _, err = cockroachDb.Exec(
 		`create table if not exists minor_blocks (height int, timeStamp int,
 		hash varchar(70), prevHash varchar(70), TrxHashRoot varchar(70), StateDeltaHash varchar(70), 
-		CMBlockHash varchar(70), ShardId int, ProposalPublicKey varchar(70), CMEpochNo int, CountTxs int, primary key(height, ShardId))`); err != nil {
+		CMBlockHash varchar(70), ShardId int, ProposalPublicKey varchar(200), CMEpochNo int, CountTxs int, primary key(height, ShardId))`); err != nil {
 		log.Fatal(err)
 		return err
 	}
@@ -55,8 +55,8 @@ func initMinor_block() (err error) {
 
 func AddMinor_block(height, timeStamp, ShardId, CMEpochNo, CountTxs int, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ProposalPublicKey string) (err error) {
 	var values string
-	values = fmt.Sprintf(`(%d, %d, '%s', '%s', '%s', '%s', '%s', %d, '%s', %d, %d)`, height, timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash, 
-							CMBlockHash, ShardId, ProposalPublicKey, CMEpochNo, CountTxs)
+	values = fmt.Sprintf(`(%d, %d, '%s', '%s', '%s', '%s', '%s', %d, '%s', %d, %d)`, height, timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash,
+		CMBlockHash, ShardId, ProposalPublicKey, CMEpochNo, CountTxs)
 	values = "insert into minor_blocks(height, timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ShardId, ProposalPublicKey, CMEpochNo, CountTxs) values" + values
 	_, err = cockroachDb.Exec(values)
 	if nil != err {
@@ -69,7 +69,7 @@ func AddMinor_block(height, timeStamp, ShardId, CMEpochNo, CountTxs int, hash, p
 
 func QueryOneMinorBlock(height, shardId int) (*data.Minor_blockInfo, int, error) {
 	var (
-		max_height, timeStamp, CMEpochNo, CountTxs   int
+		max_height, timeStamp, CMEpochNo, CountTxs                                          int
 		hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ProposalPublicKey, sqlStr string
 	)
 
@@ -86,23 +86,23 @@ func QueryOneMinorBlock(height, shardId int) (*data.Minor_blockInfo, int, error)
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&timeStamp, &hash, &prevHash, &TrxHashRoot, &StateDeltaHash, &CMBlockHash, &ProposalPublicKey, &CMEpochNo, &CountTxs); nil != err {
 		return nil, -1, err
 	}
-	return &data.Minor_blockInfo{timeStamp/1e6, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, shardId, ProposalPublicKey, CMEpochNo, CountTxs}, max_height, nil
+	return &data.Minor_blockInfo{timeStamp / 1e6, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, shardId, ProposalPublicKey, CMEpochNo, CountTxs}, max_height, nil
 }
 
 func QueryMinorBlock(index, num int) ([]*data.Minor_blockInfoH, int, error) {
 	//var rows *sql.Rows
-	if 1 == index{
+	if 1 == index {
 		sqlStr := "select count(2) from minor_blocks"
 		if err := cockroachDb.QueryRow(sqlStr).Scan(&curr_max_minor_height); nil != err {
 			return nil, -1, err
 		}
-	
+
 	}
 
 	var pageNum int
-	if curr_max_minor_height % num == 0{
-		pageNum = curr_max_minor_height/num
-	}else{
+	if curr_max_minor_height%num == 0 {
+		pageNum = curr_max_minor_height / num
+	} else {
 		pageNum = curr_max_minor_height/num + 1
 	}
 
@@ -118,7 +118,7 @@ func QueryMinorBlock(index, num int) ([]*data.Minor_blockInfoH, int, error) {
 	Minor_blockInfoH := []*data.Minor_blockInfoH{}
 	for rows.Next() {
 		var (
-			height, timeStamp, ShardId, CMEpochNo, CountTxs   int
+			height, timeStamp, ShardId, CMEpochNo, CountTxs                             int
 			hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ProposalPublicKey string
 		)
 
@@ -127,8 +127,8 @@ func QueryMinorBlock(index, num int) ([]*data.Minor_blockInfoH, int, error) {
 			break
 		}
 
-		Minor_blockInfoH = append(Minor_blockInfoH, &data.Minor_blockInfoH{data.Minor_blockInfo{timeStamp/1e6, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash,
-			ShardId, ProposalPublicKey, CMEpochNo, CountTxs},height})
+		Minor_blockInfoH = append(Minor_blockInfoH, &data.Minor_blockInfoH{data.Minor_blockInfo{timeStamp / 1e6, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash,
+			ShardId, ProposalPublicKey, CMEpochNo, CountTxs}, height})
 	}
 
 	//blockinfo := data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction}

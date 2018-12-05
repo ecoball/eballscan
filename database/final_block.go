@@ -26,7 +26,7 @@ import (
 )
 
 var (
-	Max_Final_Height int
+	Max_Final_Height      int
 	curr_max_final_height int
 )
 
@@ -35,7 +35,7 @@ func initFinal_block() (err error) {
 	if _, err = cockroachDb.Exec(
 		`create table if not exists final_blocks (height int primary key, timeStamp int,
 		hash varchar(70), prevHash varchar(70), CMBlockHash varchar(70), TrxRootHash varchar(70), 
-		StateDeltaRootHash varchar(70), MinorBlocksHash varchar(70), StateHashRoot varchar(70), TrxCount int, ProposalPubKey varchar(70), EpochNo int)`); err != nil {
+		StateDeltaRootHash varchar(70), MinorBlocksHash varchar(70), StateHashRoot varchar(70), TrxCount int, ProposalPubKey varchar(200), EpochNo int)`); err != nil {
 		log.Fatal(err)
 		return err
 	}
@@ -63,8 +63,8 @@ func initFinal_block() (err error) {
 
 func AddFinal_block(height, timeStamp, TrxCount, EpochNo int, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, ProposalPubKey string) (err error) {
 	var values string
-	values = fmt.Sprintf(`(%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d, '%s', %d)`, height, timeStamp, hash, prevHash, CMBlockHash, TrxRootHash, 
-						StateDeltaRootHash, MinorBlocksHash, StateHashRoot, TrxCount, ProposalPubKey, EpochNo)
+	values = fmt.Sprintf(`(%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d, '%s', %d)`, height, timeStamp, hash, prevHash, CMBlockHash, TrxRootHash,
+		StateDeltaRootHash, MinorBlocksHash, StateHashRoot, TrxCount, ProposalPubKey, EpochNo)
 	values = "insert into final_blocks(height, timeStamp, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, TrxCount, ProposalPubKey, EpochNo) values" + values
 	_, err = cockroachDb.Exec(values)
 	if nil != err {
@@ -77,7 +77,7 @@ func AddFinal_block(height, timeStamp, TrxCount, EpochNo int, hash, prevHash, CM
 
 func QueryOneFinalBlock(height int) (*data.Final_blockInfo, int, error) {
 	var (
-		max_height, timeStamp, trxCount, epochNo   int
+		max_height, timeStamp, trxCount, epochNo                                                                             int
 		hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, ProposalPubKey, sqlStr string
 	)
 
@@ -91,23 +91,23 @@ func QueryOneFinalBlock(height int) (*data.Final_blockInfo, int, error) {
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&timeStamp, &hash, &prevHash, &CMBlockHash, &TrxRootHash, &StateDeltaRootHash, &MinorBlocksHash, &StateHashRoot, &trxCount, &ProposalPubKey, &epochNo); nil != err {
 		return nil, -1, err
 	}
-	return &data.Final_blockInfo{timeStamp/1e6, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, trxCount, ProposalPubKey, epochNo}, max_height, nil
+	return &data.Final_blockInfo{timeStamp / 1e6, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, trxCount, ProposalPubKey, epochNo}, max_height, nil
 }
 
 func QueryFinalBlock(index, num int) ([]*data.Final_blockInfoH, int, error) {
 	//var rows *sql.Rows
-	if 1 == index{
+	if 1 == index {
 		sqlStr := "select max(height) from final_blocks"
 		if err := cockroachDb.QueryRow(sqlStr).Scan(&curr_max_final_height); nil != err {
 			return nil, -1, err
 		}
-	
+
 	}
 
 	var pageNum int
-	if curr_max_final_height % num == 0{
-		pageNum = curr_max_final_height/num
-	}else{
+	if curr_max_final_height%num == 0 {
+		pageNum = curr_max_final_height / num
+	} else {
 		pageNum = curr_max_final_height/num + 1
 	}
 
@@ -123,7 +123,7 @@ func QueryFinalBlock(index, num int) ([]*data.Final_blockInfoH, int, error) {
 	Final_blockInfoH := []*data.Final_blockInfoH{}
 	for rows.Next() {
 		var (
-			height, timeStamp, trxCount, epochNo   int
+			height, timeStamp, trxCount, epochNo                                                                         int
 			hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, ProposalPubKey string
 		)
 
@@ -132,8 +132,8 @@ func QueryFinalBlock(index, num int) ([]*data.Final_blockInfoH, int, error) {
 			break
 		}
 
-		Final_blockInfoH = append(Final_blockInfoH, &data.Final_blockInfoH{data.Final_blockInfo{timeStamp/1e6, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash,
-						MinorBlocksHash, StateHashRoot, trxCount, ProposalPubKey, epochNo},height})
+		Final_blockInfoH = append(Final_blockInfoH, &data.Final_blockInfoH{data.Final_blockInfo{timeStamp / 1e6, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash,
+			MinorBlocksHash, StateHashRoot, trxCount, ProposalPubKey, epochNo}, height})
 	}
 
 	//blockinfo := data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction}
