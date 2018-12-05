@@ -18,7 +18,7 @@
 ############################################################################
 SOURCE_DIR=$(cd `dirname $0` && pwd)
 
-#clean old install
+# clean old install
 if [ -d "${SOURCE_DIR}/build" ]; then
     echo -e "\033[;33m old eballscan and cockroach-data needs to be removed.\033[0m"
     echo -e "\033[;33m Do you wish to remove this install?\033[0m"
@@ -39,7 +39,7 @@ if [ -d "${SOURCE_DIR}/build" ]; then
    done
 fi
 
-#install cockroachdb
+# install cockroachdb
 if [ ! -e "/usr/local/bin/cockroach" ]; then
     wget -qO- https://binaries.cockroachdb.com/cockroach-v2.0.6.linux-amd64.tgz | tar  xvz
     if [ 0 -ne $? ]; then
@@ -60,7 +60,7 @@ if [ ! -e "/usr/local/bin/cockroach" ]; then
     fi
 fi
 
-#build project
+# build project
 if ! make -C ${SOURCE_DIR}
 then
     echo  -e "\033[;31m compile eballscan failed!!! \033[0m"
