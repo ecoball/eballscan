@@ -35,7 +35,7 @@ func initFinal_block() (err error) {
 	if _, err = cockroachDb.Exec(
 		`create table if not exists final_blocks (height int primary key, timeStamp int,
 		hash varchar(70), prevHash varchar(70), CMBlockHash varchar(70), TrxRootHash varchar(70), 
-		StateDeltaRootHash varchar(70), MinorBlocksHash varchar(70), StateHashRoot varchar(70), TrxCount int, ProposalPubKey varchar(200), EpochNo int)`); err != nil {
+		StateDeltaRootHash varchar(70), MinorBlocksHash varchar(70), StateHashRoot varchar(70), TrxCount int, ProposalPubKey varchar(512), EpochNo int)`); err != nil {
 		log.Fatal(err)
 		return err
 	}

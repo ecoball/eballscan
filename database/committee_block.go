@@ -34,7 +34,7 @@ func initCommittee_block() (err error) {
 	// Create the "blocks" table.
 	if _, err = cockroachDb.Exec(
 		`create table if not exists committee_blocks (height int primary key, timeStamp int,
-			hash varchar(70), prevHash varchar(70), shardsHash varchar(70), leaderPubKey varchar(200), port varchar(70), adderss varchar(70), publicKey varchar(1024), nonce int, nodeCounts int)`); err != nil {
+			hash varchar(70), prevHash varchar(70), shardsHash varchar(70), leaderPubKey varchar(512), port varchar(70), adderss varchar(70), publicKey varchar(1024), nonce int, nodeCounts int)`); err != nil {
 		log.Fatal(err)
 		return err
 	}
