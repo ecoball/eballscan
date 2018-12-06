@@ -89,7 +89,7 @@ func QueryOneMinorBlock(height, shardId int) (*data.Minor_blockInfo, int, error)
 	}
 
 	sqlStr = fmt.Sprintf("%d", height)
-	shardStr := fmt.Sprintln("%d", shardId)
+	shardStr := fmt.Sprintf("%d", shardId)
 	sqlStr = "select timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ProposalPublicKey, CMEpochNo, CountTxs from minor_blocks where height=" + sqlStr
 	sqlStr += " and ShardId="
 	sqlStr += shardStr
@@ -116,10 +116,12 @@ func QueryMinorBlockByShardId(index, num, shardId int) ([]*data.Minor_blockInfoH
 		pageNum = curr_max_minor_height/num + 1
 	}
 
-	querysql := "select height, timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ShardId, ProposalPublicKey, CMEpochNo, CountTxs from minor_blocks order by timeStamp desc limit "
+	querysql := "select height, timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ShardId, ProposalPublicKey, CMEpochNo, CountTxs from minor_blocks"
+	sqlAppend := fmt.Sprintf(" where ShardId = %d ", shardId)
+	querysql += sqlAppend + "order by timeStamp desc limit "
 	querysql = querysql + strconv.Itoa(num) + " offset " + strconv.Itoa((index-1)*num)
-	sqlAppend := fmt.Sprintf(" where ShardId = %d", shardId)
-	querysql += sqlAppend
+
+	fmt.Println(querysql)
 	rows, err := cockroachDb.Query(querysql)
 	if err != nil {
 		log.Fatal(err)
