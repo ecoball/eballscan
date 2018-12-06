@@ -17,14 +17,15 @@
 package http
 
 import (
-	"net/http"
 	"bytes"
 	"log"
-	"os/exec" 
+	"net/http"
+	"os/exec"
 
-	"github.com/gin-gonic/gin"
-	"github.com/ecoball/eballscan/database"
 	"strconv"
+
+	"github.com/ecoball/eballscan/database"
+	"github.com/gin-gonic/gin"
 )
 
 func StartHttpServer() (err error) {
@@ -55,8 +56,12 @@ func StartHttpServer() (err error) {
 	router.POST("/eballscan/getNodes", getNodes)
 	router.POST("/eballscan/getFinalBlock", getFinalBlock)
 	router.POST("/eballscan/getFinalBlockByHeight", getFinalBlockByHeight)
-	router.POST("/eballscan/getMinorBlock", getMinorBlock)
-	router.POST("/eballscan/getMinorBlockByHeight", getMinorBlockByHeight)
+
+	//minor block
+	router.GET("/eballscan/getMaxMinorBlockShardId", getMaxMinorBlockShardId)
+	router.POST("/eballscan/getMinorBlockByShardId", getMinorBlockByShardId)
+	router.POST("/eballscan/getMinorBlockByHeightAndShardId", getMinorBlockByHeightAndShardId)
+
 	router.POST("/eballscan/getViewChangeBlock", getViewChangeBlock)
 	router.POST("/eballscan/getViewChangeBlockByHeight", getViewChangeBlockByHeight)
 	router.POST("/eballscan/getViewChangeBlockByFinalBlockHeight", getViewChangeBlockByFinalBlockHeight)
@@ -68,13 +73,13 @@ func StartHttpServer() (err error) {
 func getBlockByHeight(c *gin.Context) {
 	height_str := c.PostForm("height")
 	height, err := strconv.Atoi(height_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
 	info, max_height, err := database.QueryOneBlock(height)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
@@ -85,20 +90,20 @@ func getBlockByHeight(c *gin.Context) {
 func getBlock(c *gin.Context) {
 	num_str := c.PostForm("num")
 	num, err := strconv.Atoi(num_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
-		return 
+		return
 	}
 
 	index_str := c.PostForm("index")
 	index, err := strconv.Atoi(index_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
 	info, pageNum, err := database.QueryBlock(index, num)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
@@ -109,20 +114,20 @@ func getBlock(c *gin.Context) {
 func getTransaction(c *gin.Context) {
 	num_str := c.PostForm("num")
 	num, err := strconv.Atoi(num_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
 	index_str := c.PostForm("index")
 	index, err := strconv.Atoi(index_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
 	info, pageNum, err := database.QueryTransaction(index, num)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
@@ -144,7 +149,7 @@ func getTransaction(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
-	
+
 	countTxs_str := c.PostForm("CountTxs")
 	countTxs, err := strconv.Atoi(countTxs_str)
 	if nil != err{
@@ -168,7 +173,7 @@ func getTransaction(c *gin.Context) {
 func getTransactionByHash(c *gin.Context) {
 	hash := c.PostForm("hash")
 	info, err := database.QueryOneTransaction(hash)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
@@ -183,7 +188,7 @@ func getTransactionByHash(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
-	
+
 	timeStamp_str := c.PostForm("TimeStamp")
 	timeStamp, err := strconv.Atoi(timeStamp_str)
 	if nil != err{
@@ -214,13 +219,13 @@ func getTransactionByHash(c *gin.Context) {
 func getTransactionByHeight(c *gin.Context) {
 	height_str := c.PostForm("blockHeight")
 	blockHeight, err := strconv.Atoi(height_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
-	
+
 	info, err := database.QueryTransactionsByHeight(blockHeight)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
@@ -233,14 +238,14 @@ func getTransactionsByAccountName(c *gin.Context) {
 
 	num_str := c.PostForm("num")
 	num, err := strconv.Atoi(num_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
 	index_str := c.PostForm("index")
 	index, err := strconv.Atoi(index_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
@@ -257,14 +262,14 @@ func getTransactionsByAccountName(c *gin.Context) {
 func getAccounts(c *gin.Context) {
 	num_str := c.PostForm("num")
 	num, err := strconv.Atoi(num_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
 	index_str := c.PostForm("index")
 	index, err := strconv.Atoi(index_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
@@ -291,45 +296,45 @@ func getAccountInfo(c *gin.Context) {
 }
 
 func exec_shell(s string) {
-    cmd := exec.Command("/bin/bash", "-c", s)
-    var out bytes.Buffer
+	cmd := exec.Command("/bin/bash", "-c", s)
+	var out bytes.Buffer
 
-    cmd.Stdout = &out
-    err := cmd.Run()
-    if err != nil {
-        log.Fatal(err)
-    }
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func Compile() {
 	exec_shell("cd ../c2wasm-compiler/;./compile.sh api.c api;cd ../eballscan/")
 }
 
-func addCommittee_block(c *gin.Context){
+func addCommittee_block(c *gin.Context) {
 	Nonce_str := c.PostForm("Nonce")
 	Nonce, err := strconv.Atoi(Nonce_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
-	
+
 	timeStamp_str := c.PostForm("TimeStamp")
 	timeStamp, err := strconv.Atoi(timeStamp_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
 	Height_str := c.PostForm("Height")
 	Height, err := strconv.Atoi(Height_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
 	NodeCounts_str := c.PostForm("NodeCounts")
 	NodeCounts, err := strconv.Atoi(NodeCounts_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
@@ -341,9 +346,9 @@ func addCommittee_block(c *gin.Context){
 	CandidatePublicKey := c.PostForm("CandidatePublicKey")
 	CandidateAddress := c.PostForm("CandidateAddress")
 	CandidatePort := c.PostForm("CandidatePort")
-	
+
 	errcode := database.AddCommittee_block(Height, Nonce, timeStamp, NodeCounts, hash, PrevHash, ShardsHash, LeaderPubKey, CandidatePort, CandidateAddress, CandidatePublicKey)
-	if nil != errcode{
+	if nil != errcode {
 		c.JSON(http.StatusBadRequest, gin.H{"result": errcode.Error()})
 		return
 	}
@@ -351,35 +356,34 @@ func addCommittee_block(c *gin.Context){
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
-func addFinal_block(c *gin.Context){
+func addFinal_block(c *gin.Context) {
 	TrxCount_str := c.PostForm("TrxCount")
 	TrxCount, err := strconv.Atoi(TrxCount_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
-	
+
 	timeStamp_str := c.PostForm("TimeStamp")
 	timeStamp, err := strconv.Atoi(timeStamp_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
 	Height_str := c.PostForm("Height")
 	Height, err := strconv.Atoi(Height_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
 	EpochNo_str := c.PostForm("EpochNo")
 	EpochNo, err := strconv.Atoi(EpochNo_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
-
 
 	hash := c.PostForm("Hash")
 	PrevHash := c.PostForm("PrevHash")
@@ -389,10 +393,10 @@ func addFinal_block(c *gin.Context){
 	MinorBlocksHash := c.PostForm("MinorBlocksHash")
 	StateHashRoot := c.PostForm("StateHashRoot")
 	ProposalPubKey := c.PostForm("ProposalPubKey")
-	
+
 	errcode := database.AddFinal_block(Height, timeStamp, TrxCount, EpochNo, hash, PrevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash,
-										StateHashRoot, ProposalPubKey)
-	if nil != errcode{
+		StateHashRoot, ProposalPubKey)
+	if nil != errcode {
 		c.JSON(http.StatusBadRequest, gin.H{"result": errcode.Error()})
 		return
 	}
@@ -400,35 +404,34 @@ func addFinal_block(c *gin.Context){
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
-func addMinor_block(c *gin.Context){
+func addMinor_block(c *gin.Context) {
 	ShardId_str := c.PostForm("ShardId")
 	ShardId, err := strconv.Atoi(ShardId_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
-	
+
 	timeStamp_str := c.PostForm("TimeStamp")
 	timeStamp, err := strconv.Atoi(timeStamp_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
 	Height_str := c.PostForm("Height")
 	Height, err := strconv.Atoi(Height_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
 	CMEpochNo_str := c.PostForm("CMEpochNo")
 	CMEpochNo, err := strconv.Atoi(CMEpochNo_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
-
 
 	hash := c.PostForm("Hash")
 	PrevHash := c.PostForm("PrevHash")
@@ -437,10 +440,10 @@ func addMinor_block(c *gin.Context){
 	CMBlockHash := c.PostForm("CMBlockHash")
 	ProposalPublicKey := c.PostForm("ProposalPublicKey")
 	counts := 1
-	
+
 	errcode := database.AddMinor_block(Height, timeStamp, ShardId, CMEpochNo, counts, hash, PrevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ProposalPublicKey)
 
-	if nil != errcode{
+	if nil != errcode {
 		c.JSON(http.StatusBadRequest, gin.H{"result": errcode.Error()})
 		return
 	}
@@ -448,10 +451,10 @@ func addMinor_block(c *gin.Context){
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
-func addNode(c *gin.Context){
+func addNode(c *gin.Context) {
 	Committee_blockHeight_str := c.PostForm("Committee_blockHeight")
 	Committee_blockHeight, err := strconv.Atoi(Committee_blockHeight_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
@@ -461,45 +464,45 @@ func addNode(c *gin.Context){
 	Port := c.PostForm("Port")
 
 	errcode := database.AddNode(PublicKey, Port, Address, Committee_blockHeight)
-	if nil != errcode{
+	if nil != errcode {
 		c.JSON(http.StatusBadRequest, gin.H{"result": errcode.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
-func addViewchangeblock(c *gin.Context){
+func addViewchangeblock(c *gin.Context) {
 	Round_str := c.PostForm("Round")
 	Round, err := strconv.Atoi(Round_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
-	
+
 	timeStamp_str := c.PostForm("TimeStamp")
 	timeStamp, err := strconv.Atoi(timeStamp_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
 	Height_str := c.PostForm("Height")
 	Height, err := strconv.Atoi(Height_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
 	CMEpochNo_str := c.PostForm("CMEpochNo")
 	CMEpochNo, err := strconv.Atoi(CMEpochNo_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
 	FinalBlockHeight_str := c.PostForm("FinalBlockHeight")
 	FinalBlockHeight, err := strconv.Atoi(FinalBlockHeight_str)
-	if nil != err{
+	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
@@ -509,10 +512,10 @@ func addViewchangeblock(c *gin.Context){
 	CandidatePublicKey := c.PostForm("CandidatePublicKey")
 	CandidateAddress := c.PostForm("CandidateAddress")
 	CandidatePort := c.PostForm("CandidatePort")
-	
+
 	errcode := database.AddViewchangeblock(Height, timeStamp, Round, CMEpochNo, FinalBlockHeight, hash, PrevHash, CandidatePort, CandidateAddress, CandidatePublicKey)
 
-	if nil != errcode{
+	if nil != errcode {
 		c.JSON(http.StatusBadRequest, gin.H{"result": errcode.Error()})
 		return
 	}
