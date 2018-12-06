@@ -83,7 +83,7 @@ func QueryOneMinorBlock(height, shardId int) (*data.Minor_blockInfo, int, error)
 		hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ProposalPublicKey, sqlStr string
 	)
 
-	queryStr := "select max(height) from minor_blocks"
+	queryStr := fmt.Sprintf("select max(height) from minor_blocks where ShardId = %d", shardId)
 	if err := cockroachDb.QueryRow(queryStr).Scan(&max_height); nil != err {
 		return nil, -1, err
 	}
