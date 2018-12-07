@@ -102,7 +102,12 @@ func QueryOneMinorBlock(height, shardId int) (*data.Minor_blockInfo, int, error)
 func QueryMinorBlockByShardId(index, num, shardId int) ([]*data.Minor_blockInfoH, int, error) {
 	//var rows *sql.Rows
 	if 1 == index {
-		sqlStr := fmt.Sprintf("select count(2) from minor_blocks where ShardId = %d", shardId)
+		var sqlStr string
+		if -1 == shardId {
+			sqlStr = "select count(2) from minor_blocks"
+		} else {
+			sqlStr = fmt.Sprintf("select count(2) from minor_blocks where ShardId = %d", shardId)
+		}
 		if err := cockroachDb.QueryRow(sqlStr).Scan(&curr_max_minor_height); nil != err {
 			return nil, -1, err
 		}
@@ -117,8 +122,11 @@ func QueryMinorBlockByShardId(index, num, shardId int) ([]*data.Minor_blockInfoH
 	}
 
 	querysql := "select height, timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ShardId, ProposalPublicKey, CMEpochNo, CountTxs from minor_blocks"
-	sqlAppend := fmt.Sprintf(" where ShardId = %d ", shardId)
-	querysql += sqlAppend + "order by timeStamp desc limit "
+	if -1 != shardId {
+		sqlAppend := fmt.Sprintf(" where ShardId = %d", shardId)
+		querysql += sqlAppend
+	}
+	querysql += " order by timeStamp desc limit "
 	querysql = querysql + strconv.Itoa(num) + " offset " + strconv.Itoa((index-1)*num)
 
 	fmt.Println(querysql)
