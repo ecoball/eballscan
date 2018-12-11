@@ -168,7 +168,7 @@ func getMinorBlockByShardId(c *gin.Context) {
 		return
 	}
 
-	info, pageNum, err := database.QueryMinorBlockByShardId(index, num, shardId)
+	info, pageNum, err := database.QueryMinorBlockByShardIdOrHeight(index, num, shardId, true)
 	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
@@ -185,13 +185,27 @@ func getMinorBlockByHeight(c *gin.Context) {
 		return
 	}
 
-	info, err := database.QueryMinorBlockByHeight(finalBlockHight)
+	num_str := c.PostForm("num")
+	num, err := strconv.Atoi(num_str)
 	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"blocks": info})
+	index_str := c.PostForm("index")
+	index, err := strconv.Atoi(index_str)
+	if nil != err {
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
+	}
+
+	info, pageNum, err := database.QueryMinorBlockByShardIdOrHeight(index, num, finalBlockHight, false)
+	if nil != err {
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"pageNum": pageNum, "blocks": info})
 }
 
 func getMinorBlockByHeightAndShardId(c *gin.Context) {
