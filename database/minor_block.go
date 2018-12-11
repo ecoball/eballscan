@@ -158,7 +158,7 @@ func QueryMinorBlockByShardIdOrHeight(index, num, uniqueId int, bShardId bool) (
 
 	rows, err := cockroachDb.Query(querysql)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 		return nil, -1, err
 	}
 	defer rows.Close()
@@ -171,7 +171,7 @@ func QueryMinorBlockByShardIdOrHeight(index, num, uniqueId int, bShardId bool) (
 		)
 
 		if err = rows.Scan(&height, &timeStamp, &hash, &prevHash, &TrxHashRoot, &StateDeltaHash, &CMBlockHash, &ShardId, &ProposalPublicKey, &CMEpochNo, &CountTxs); err != nil {
-			log.Fatal(err)
+			log.Error(err)
 			break
 		}
 
