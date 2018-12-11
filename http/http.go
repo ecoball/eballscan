@@ -32,25 +32,27 @@ func StartHttpServer() (err error) {
 	//get router instance
 	router := gin.Default()
 
-	//register handle
-	router.POST("/eballscan/getBlock", getBlock)
-	router.POST("/eballscan/getBlockByHeight", getBlockByHeight)
-
-	//transaction
-	router.POST("/eballscan/getTransactionByHash", getTransactionByHash)
+	//test
 	//router.POST("/eballscan/add_transaction", addTransaction)
-	router.POST("/eballscan/getTransactionByHeightAndShardId", getTransactionByHeightAndShardId)
-	router.POST("/eballscan/getTransaction", getTransaction)
-	router.POST("/eballscan/getTransactionsByAccountName", getTransactionsByAccountName)
-	router.POST("/eballscan/getAccounts", getAccounts)
-	router.POST("/eballscan/getAccountInfo", getAccountInfo)
-
 	/*router.POST("/eballscan/addCommittee_block", addCommittee_block)
 	router.POST("/eballscan/addFinal_block", addFinal_block)
 	router.POST("/eballscan/addMinor_block", addMinor_block)
 	router.POST("/eballscan/addNode", addNode)
 	router.POST("/eballscan/addViewchangeblock", addViewchangeblock)*/
 
+	//register handle
+	router.POST("/eballscan/getBlock", getBlock)
+	router.POST("/eballscan/getBlockByHeight", getBlockByHeight)
+
+	//transaction
+	router.POST("/eballscan/getTransactionByHash", getTransactionByHash)
+	router.POST("/eballscan/getTransactionByHeightAndShardId", getTransactionByHeightAndShardId)
+	router.POST("/eballscan/getTransaction", getTransaction)
+	router.POST("/eballscan/getTransactionsByAccountName", getTransactionsByAccountName)
+	router.POST("/eballscan/getAccounts", getAccounts)
+	router.POST("/eballscan/getAccountInfo", getAccountInfo)
+
+	//committee block
 	router.POST("/eballscan/getCommitteeBlock", getCommitteeBlock)
 	router.POST("/eballscan/getCommitteeBlockByHeight", getCommitteeBlockByHeight)
 	router.POST("/eballscan/getNodesByHeight", getNodesByHeight)
@@ -67,6 +69,7 @@ func StartHttpServer() (err error) {
 	router.POST("/eballscan/getMinorBlockByHeight", getMinorBlockByHeight)
 	router.POST("/eballscan/getMinorBlockByHeightAndShardId", getMinorBlockByHeightAndShardId)
 
+	//view change block
 	router.POST("/eballscan/getViewChangeBlock", getViewChangeBlock)
 	router.POST("/eballscan/getViewChangeBlockByHeight", getViewChangeBlockByHeight)
 	router.POST("/eballscan/getViewChangeBlockByFinalBlockHeight", getViewChangeBlockByFinalBlockHeight)
