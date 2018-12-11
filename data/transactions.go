@@ -17,11 +17,11 @@
 package data
 
 import (
-	"time"
 	"encoding/json"
 	"fmt"
-	"github.com/muesli/cache2go"
+	"time"
 
+	"github.com/muesli/cache2go"
 )
 
 const (
@@ -31,16 +31,17 @@ const (
 var (
 	Transactions = cache2go.Cache("Transactions")
 
-	THashArray         []string
+	THashArray []string
 )
 
 type TransactionInfo struct {
-	TxType     int
-	TimeStamp  string
-	Permission string
-	TxFrom     string
-	Address    string
+	TxType      int
+	TimeStamp   string
+	Permission  string
+	TxFrom      string
+	Address     string
 	BlockHeight int
+	ShardId     int
 }
 type TransactionInfoH struct {
 	TransactionInfo
@@ -59,15 +60,15 @@ func PrintTransaction() string {
 		res, err := Transactions.Value(hash)
 
 		if err == nil {
-		One := TransactionInfoH{}
-		One.Hash = hash
-		One.TxType = res.Data().(*TransactionInfo).TxType
-		One.TimeStamp = res.Data().(*TransactionInfo).TimeStamp
-		One.Permission = res.Data().(*TransactionInfo).Permission
-		One.TxFrom = res.Data().(*TransactionInfo).TxFrom
-		One.Address = res.Data().(*TransactionInfo).Address
-		One.BlockHeight = res.Data().(*TransactionInfo).BlockHeight
-		TransactionInfoHArray = append(TransactionInfoHArray, One)
+			One := TransactionInfoH{}
+			One.Hash = hash
+			One.TxType = res.Data().(*TransactionInfo).TxType
+			One.TimeStamp = res.Data().(*TransactionInfo).TimeStamp
+			One.Permission = res.Data().(*TransactionInfo).Permission
+			One.TxFrom = res.Data().(*TransactionInfo).TxFrom
+			One.Address = res.Data().(*TransactionInfo).Address
+			One.BlockHeight = res.Data().(*TransactionInfo).BlockHeight
+			TransactionInfoHArray = append(TransactionInfoHArray, One)
 		} else {
 			fmt.Println("Error retrieving value from cache:", err)
 		}

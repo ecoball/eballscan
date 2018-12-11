@@ -203,7 +203,7 @@ func handleTransaction(trxs []*types.Transaction, height uint64, ShardId uint32)
 			return err
 		}
 		data.AddTransaction(common.ToHex(v.Hash.Bytes()), &data.TransactionInfo{int(v.Type), time.Unix(v.TimeStamp/1000000000, 0).Format("2006-01-02 15:04:05"),
-			v.Permission, v.From.String(), v.Addr.String(), int(height)})
+			v.Permission, v.From.String(), v.Addr.String(), int(height), int(ShardId)})
 
 		if v.Type == 0x02 { //新增账号交易处理
 			info := new(types.InvokeInfo)

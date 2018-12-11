@@ -60,16 +60,16 @@ func initTransaction() (err error) {
 
 	for rows.Next() {
 		var (
-			txType, timeStamp, blockHeight, ShardId int
+			txType, timeStamp, blockHeight, shardId int
 			hash, permission, txFrom, address       string
 		)
 
-		if err = rows.Scan(&hash, &txType, &timeStamp, &permission, &txFrom, &address, &blockHeight, &ShardId); err != nil {
+		if err = rows.Scan(&hash, &txType, &timeStamp, &permission, &txFrom, &address, &blockHeight, &shardId); err != nil {
 			log.Fatal(err)
 			break
 		}
 		data.THashArray = append(data.THashArray, hash)
-		data.AddTransaction(hash, &data.TransactionInfo{txType, time.Unix(int64(timeStamp/1e9), 0).Format("2006-01-02 15:04:05"), permission, txFrom, address, blockHeight})
+		data.AddTransaction(hash, &data.TransactionInfo{txType, time.Unix(int64(timeStamp/1e9), 0).Format("2006-01-02 15:04:05"), permission, txFrom, address, blockHeight, shardId})
 	}
 
 	//set loader
@@ -105,15 +105,15 @@ func AddTransaction(txType, timeStamp, blockHeight, ShardId int, hash, permissio
 
 func QueryOneTransaction(hash string) (*data.TransactionInfo, error) {
 	var (
-		txType, timeStamp, blockHeight      int
-		permission, txFrom, address, sqlStr string
+		txType, timeStamp, blockHeight, shardId int
+		permission, txFrom, address, sqlStr     string
 	)
 
-	sqlStr = "select txType, timeStamp, permission, txFrom, address, blockHeight from transactions where hash = '" + hash + "'"
-	if err := cockroachDb.QueryRow(sqlStr).Scan(&txType, &timeStamp, &permission, &txFrom, &address, &blockHeight); nil != err {
+	sqlStr = "select txType, timeStamp, permission, txFrom, address, blockHeight, ShardId from transactions where hash = '" + hash + "'"
+	if err := cockroachDb.QueryRow(sqlStr).Scan(&txType, &timeStamp, &permission, &txFrom, &address, &blockHeight, &shardId); nil != err {
 		return nil, err
 	}
-	return &data.TransactionInfo{txType, strconv.Itoa(timeStamp / 1e6), permission, txFrom, address, blockHeight}, nil
+	return &data.TransactionInfo{txType, strconv.Itoa(timeStamp / 1e6), permission, txFrom, address, blockHeight, shardId}, nil
 }
 
 func QueryTransactionsByAccountName(num, index int, name string) ([]*data.TransactionInfoH, int, int, error) {
@@ -130,7 +130,7 @@ func QueryTransactionsByAccountName(num, index int, name string) ([]*data.Transa
 		pageNum = counts/num + 1
 	}
 
-	querySql := "select hash, txType, timeStamp, permission, txFrom, address, blockHeight from transactions where txFrom = '"
+	querySql := "select hash, txType, timeStamp, permission, txFrom, address, blockHeight, ShardId from transactions where txFrom = '"
 	querySql = querySql + name + "' or address = '" + name + "' order by timeStamp desc limit " + strconv.Itoa(num) + " offset " + strconv.Itoa((index-1)*num)
 
 	rows, err := cockroachDb.Query(querySql)
@@ -143,16 +143,16 @@ func QueryTransactionsByAccountName(num, index int, name string) ([]*data.Transa
 	transactionInfoH := []*data.TransactionInfoH{}
 	for rows.Next() {
 		var (
-			txType, blockHeight, timeStamp    int
-			permission, txFrom, address, hash string
+			txType, blockHeight, timeStamp, shardId int
+			permission, txFrom, address, hash       string
 		)
 
-		if err = rows.Scan(&hash, &txType, &timeStamp, &permission, &txFrom, &address, &blockHeight); err != nil {
+		if err = rows.Scan(&hash, &txType, &timeStamp, &permission, &txFrom, &address, &blockHeight, &shardId); err != nil {
 			log.Fatal(err)
 			break
 		}
 
-		transactionInfoH = append(transactionInfoH, &data.TransactionInfoH{data.TransactionInfo{txType, strconv.Itoa(timeStamp / 1e6), permission, txFrom, address, blockHeight}, hash})
+		transactionInfoH = append(transactionInfoH, &data.TransactionInfoH{data.TransactionInfo{txType, strconv.Itoa(timeStamp / 1e6), permission, txFrom, address, blockHeight, shardId}, hash})
 	}
 
 	return transactionInfoH, pageNum, counts, nil
@@ -181,7 +181,7 @@ func QueryTransactionsByHeightAndShardId(blockHeight, shardId int) ([]*data.Tran
 			break
 		}
 
-		transactionInfoH = append(transactionInfoH, &data.TransactionInfoH{data.TransactionInfo{txType, strconv.Itoa(timeStamp / 1e6), permission, txFrom, address, blockHeight}, hash})
+		transactionInfoH = append(transactionInfoH, &data.TransactionInfoH{data.TransactionInfo{txType, strconv.Itoa(timeStamp / 1e6), permission, txFrom, address, blockHeight, shardId}, hash})
 	}
 
 	return transactionInfoH, nil
@@ -203,7 +203,7 @@ func QueryTransaction(index, num int) ([]*data.TransactionInfoH, int, error) {
 		pageNum = current_transactions_num/num + 1
 	}
 
-	sqlStr := "select hash, txType, timeStamp, permission, txFrom, address, blockHeight from transactions order by timeStamp desc limit "
+	sqlStr := "select hash, txType, timeStamp, permission, txFrom, address, blockHeight, ShardId from transactions order by timeStamp desc limit "
 	sqlStr = sqlStr + strconv.Itoa(num) + " offset " + strconv.Itoa((index-1)*num)
 
 	rows, err := cockroachDb.Query(sqlStr)
@@ -216,16 +216,16 @@ func QueryTransaction(index, num int) ([]*data.TransactionInfoH, int, error) {
 	transactionInfoH := []*data.TransactionInfoH{}
 	for rows.Next() {
 		var (
-			txType, blockHeight, timeStamp    int
-			permission, txFrom, address, hash string
+			txType, blockHeight, timeStamp, shardId int
+			permission, txFrom, address, hash       string
 		)
 
-		if err = rows.Scan(&hash, &txType, &timeStamp, &permission, &txFrom, &address, &blockHeight); err != nil {
+		if err = rows.Scan(&hash, &txType, &timeStamp, &permission, &txFrom, &address, &blockHeight, &shardId); err != nil {
 			log.Fatal(err)
 			break
 		}
 
-		transactionInfoH = append(transactionInfoH, &data.TransactionInfoH{data.TransactionInfo{txType, strconv.Itoa(timeStamp / 1e6), permission, txFrom, address, blockHeight}, hash})
+		transactionInfoH = append(transactionInfoH, &data.TransactionInfoH{data.TransactionInfo{txType, strconv.Itoa(timeStamp / 1e6), permission, txFrom, address, blockHeight, shardId}, hash})
 	}
 
 	return transactionInfoH, pageNum, nil
