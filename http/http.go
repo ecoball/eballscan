@@ -62,6 +62,7 @@ func StartHttpServer() (err error) {
 	//minor block
 	router.GET("/eballscan/getMaxMinorBlockShardId", getMaxMinorBlockShardId)
 	router.POST("/eballscan/getMinorBlockByShardId", getMinorBlockByShardId)
+	router.POST("/eballscan/getMinorBlockByHeight", getMinorBlockByHeight)
 	router.POST("/eballscan/getMinorBlockByHeightAndShardId", getMinorBlockByHeightAndShardId)
 
 	router.POST("/eballscan/getViewChangeBlock", getViewChangeBlock)

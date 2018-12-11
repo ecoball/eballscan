@@ -21,7 +21,6 @@ import (
 	//"encoding/json"
 	//"fmt"
 	"github.com/muesli/cache2go"
-
 )
 
 const (
@@ -34,19 +33,19 @@ var (
 	//THashArray         []string
 )
 
-
 type Final_blockInfo struct {
-	TimeStamp  int
-	Hash string
-	PrevHash     string
-	CMBlockHash    string
-	TrxRootHash  string
-	StateDeltaRootHash    string
-	MinorBlocksHash      string
-	StateHashRoot        string
-	TrxCount       int
-	ProposalPubKey  string
-	EpochNo       int
+	TimeStamp          int
+	Hash               string
+	PrevHash           string
+	CMBlockHash        string
+	TrxRootHash        string
+	StateDeltaRootHash string
+	MinorBlocksHash    string
+	StateHashRoot      string
+	MinorBlockCount    int
+	TrxCount           int
+	ProposalPubKey     string
+	EpochNo            int
 }
 type Final_blockInfoH struct {
 	Final_blockInfo

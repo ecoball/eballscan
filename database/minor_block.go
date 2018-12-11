@@ -101,6 +101,36 @@ func QueryMaxMinorBlockShardId() (int, error) {
 	return maxShardId, nil
 }
 
+func QueryMinorBlockByHeight(finalBlockHight int) ([]*data.Minor_blockInfoH, error) {
+	querysql := "select height, timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ShardId, ProposalPublicKey, CMEpochNo, CountTxs from minor_blocks"
+	querysql += fmt.Sprintf(" where FinalBlockHight = %d", finalBlockHight)
+
+	rows, err := cockroachDb.Query(querysql)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	Minor_blockInfoH := []*data.Minor_blockInfoH{}
+	for rows.Next() {
+		var (
+			height, timeStamp, ShardId, CMEpochNo, CountTxs                             int
+			hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ProposalPublicKey string
+		)
+
+		if err = rows.Scan(&height, &timeStamp, &hash, &prevHash, &TrxHashRoot, &StateDeltaHash, &CMBlockHash, &ShardId, &ProposalPublicKey, &CMEpochNo, &CountTxs); err != nil {
+			log.Fatal(err)
+			break
+		}
+
+		Minor_blockInfoH = append(Minor_blockInfoH, &data.Minor_blockInfoH{data.Minor_blockInfo{timeStamp / 1e6, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash,
+			ShardId, ProposalPublicKey, CMEpochNo, CountTxs}, height})
+	}
+
+	return Minor_blockInfoH, nil
+}
+
 func QueryOneMinorBlock(height, shardId int) (*data.Minor_blockInfo, int, error) {
 	var (
 		max_height, timeStamp, CMEpochNo, CountTxs                                          int
@@ -153,7 +183,6 @@ func QueryMinorBlockByShardId(index, num, shardId int) ([]*data.Minor_blockInfoH
 	querysql += " order by timeStamp desc limit "
 	querysql = querysql + strconv.Itoa(num) + " offset " + strconv.Itoa((index-1)*num)
 
-	fmt.Println(querysql)
 	rows, err := cockroachDb.Query(querysql)
 	if err != nil {
 		log.Fatal(err)

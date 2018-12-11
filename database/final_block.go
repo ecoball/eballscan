@@ -77,7 +77,7 @@ func AddFinal_block(height, timeStamp, minorBlockCount, TrxCount, EpochNo int, h
 
 func QueryOneFinalBlock(height int) (*data.Final_blockInfo, int, error) {
 	var (
-		max_height, timeStamp, trxCount, epochNo                                                                             int
+		max_height, timeStamp, minorBlockCount, trxCount, epochNo                                                            int
 		hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, ProposalPubKey, sqlStr string
 	)
 
@@ -87,11 +87,11 @@ func QueryOneFinalBlock(height int) (*data.Final_blockInfo, int, error) {
 	}
 
 	sqlStr = fmt.Sprintf("%d", height)
-	sqlStr = "select timeStamp, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, TrxCount, ProposalPubKey, EpochNo from final_blocks where height = " + sqlStr
-	if err := cockroachDb.QueryRow(sqlStr).Scan(&timeStamp, &hash, &prevHash, &CMBlockHash, &TrxRootHash, &StateDeltaRootHash, &MinorBlocksHash, &StateHashRoot, &trxCount, &ProposalPubKey, &epochNo); nil != err {
+	sqlStr = "select timeStamp, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, MinorBlockCount, TrxCount, ProposalPubKey, EpochNo from final_blocks where height = " + sqlStr
+	if err := cockroachDb.QueryRow(sqlStr).Scan(&timeStamp, &hash, &prevHash, &CMBlockHash, &TrxRootHash, &StateDeltaRootHash, &MinorBlocksHash, &StateHashRoot, &minorBlockCount, &trxCount, &ProposalPubKey, &epochNo); nil != err {
 		return nil, -1, err
 	}
-	return &data.Final_blockInfo{timeStamp / 1e6, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, trxCount, ProposalPubKey, epochNo}, max_height, nil
+	return &data.Final_blockInfo{timeStamp / 1e6, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, minorBlockCount, trxCount, ProposalPubKey, epochNo}, max_height, nil
 }
 
 func QueryFinalBlock(index, num int) ([]*data.Final_blockInfoH, int, error) {
@@ -111,7 +111,7 @@ func QueryFinalBlock(index, num int) ([]*data.Final_blockInfoH, int, error) {
 		pageNum = curr_max_final_height/num + 1
 	}
 
-	querysql := "select height, timeStamp, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, TrxCount, ProposalPubKey, EpochNo from final_blocks order by timeStamp desc limit "
+	querysql := "select height, timeStamp, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, MinorBlockCount, TrxCount, ProposalPubKey, EpochNo from final_blocks order by timeStamp desc limit "
 	querysql = querysql + strconv.Itoa(num) + " offset " + strconv.Itoa((index-1)*num)
 	rows, err := cockroachDb.Query(querysql)
 	if err != nil {
@@ -123,17 +123,17 @@ func QueryFinalBlock(index, num int) ([]*data.Final_blockInfoH, int, error) {
 	Final_blockInfoH := []*data.Final_blockInfoH{}
 	for rows.Next() {
 		var (
-			height, timeStamp, trxCount, epochNo                                                                         int
+			height, timeStamp, trxCount, minorBlockCount, epochNo                                                        int
 			hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, ProposalPubKey string
 		)
 
-		if err = rows.Scan(&height, &timeStamp, &hash, &prevHash, &CMBlockHash, &TrxRootHash, &StateDeltaRootHash, &MinorBlocksHash, &StateHashRoot, &trxCount, &ProposalPubKey, &epochNo); err != nil {
+		if err = rows.Scan(&height, &timeStamp, &hash, &prevHash, &CMBlockHash, &TrxRootHash, &StateDeltaRootHash, &MinorBlocksHash, &StateHashRoot, &minorBlockCount, &trxCount, &ProposalPubKey, &epochNo); err != nil {
 			log.Fatal(err)
 			break
 		}
 
 		Final_blockInfoH = append(Final_blockInfoH, &data.Final_blockInfoH{data.Final_blockInfo{timeStamp / 1e6, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash,
-			MinorBlocksHash, StateHashRoot, trxCount, ProposalPubKey, epochNo}, height})
+			MinorBlocksHash, StateHashRoot, minorBlockCount, trxCount, ProposalPubKey, epochNo}, height})
 	}
 
 	//blockinfo := data.BlockInfo{hash, prevHash, merkleHash, stateHash, countTxs, timestamp, numTransaction}
