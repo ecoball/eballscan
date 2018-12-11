@@ -54,26 +54,38 @@ func initMinor_block() (err error) {
 }
 
 func AddMinor_block(height, timeStamp, ShardId, finalBlockHight, CMEpochNo, CountTxs int, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ProposalPublicKey string) (err error) {
-	sqlstr := "if not exists (select 1 from minor_blocks where height=" + fmt.Sprintf("%d", height) + " and ShardId=" + fmt.Sprintf("%d", ShardId) + ") "
-	var values string
-	values = fmt.Sprintf(`(%d, %d, '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', %d, %d)`, height, timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash,
-		CMBlockHash, ShardId, finalBlockHight, ProposalPublicKey, CMEpochNo, CountTxs)
-	values = "insert into minor_blocks(height, timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ShardId, FinalBlockHight, ProposalPublicKey, CMEpochNo, CountTxs) values" + values
-	values = sqlstr + values
-	if -1 != finalBlockHight {
-		values += " else update minor_blocks set FinalBlockHight=" + fmt.Sprintf("%d", finalBlockHight)
-	}
-
-	if -1 == finalBlockHight {
-		values += " else update minor_blocks set CountTxs=" + fmt.Sprintf("%d", CountTxs)
-	}
-
-	values += " where height=" + fmt.Sprintf("%d", height) + " and ShardId=" + fmt.Sprintf("%d", ShardId)
-
-	_, err = cockroachDb.Exec(values)
-	if nil != err {
-		//log.Fatal(err)
+	var countRow int
+	queryStr := "select count(1) from minor_blocks where height=" + fmt.Sprintf("%d", height) + " and ShardId=" + fmt.Sprintf("%d", ShardId)
+	if err := cockroachDb.QueryRow(queryStr).Scan(&countRow); nil != err {
 		return err
+	}
+
+	if 0 == countRow {
+		values := fmt.Sprintf(`(%d, %d, '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', %d, %d)`, height, timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash,
+			CMBlockHash, ShardId, finalBlockHight, ProposalPublicKey, CMEpochNo, CountTxs)
+		values = "insert into minor_blocks(height, timeStamp, hash, prevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ShardId, FinalBlockHight, ProposalPublicKey, CMEpochNo, CountTxs) values" + values
+		_, err = cockroachDb.Exec(values)
+		if nil != err {
+			log.Fatal(err)
+			return err
+		}
+	} else {
+		var values string
+		if -1 != finalBlockHight {
+			values = "update minor_blocks set FinalBlockHight=" + fmt.Sprintf("%d", finalBlockHight)
+		}
+
+		if -1 == finalBlockHight {
+			values = "update minor_blocks set CountTxs=" + fmt.Sprintf("%d", CountTxs)
+		}
+
+		values += " where height=" + fmt.Sprintf("%d", height) + " and ShardId=" + fmt.Sprintf("%d", ShardId)
+
+		_, err = cockroachDb.Exec(values)
+		if nil != err {
+			log.Fatal(err)
+			return err
+		}
 	}
 
 	return
