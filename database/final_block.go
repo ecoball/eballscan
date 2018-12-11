@@ -35,7 +35,7 @@ func initFinal_block() (err error) {
 	if _, err = cockroachDb.Exec(
 		`create table if not exists final_blocks (height int primary key, timeStamp int,
 		hash varchar(70), prevHash varchar(70), CMBlockHash varchar(70), TrxRootHash varchar(70), 
-		StateDeltaRootHash varchar(70), MinorBlocksHash varchar(70), StateHashRoot varchar(70), TrxCount int, ProposalPubKey varchar(512), EpochNo int)`); err != nil {
+		StateDeltaRootHash varchar(70), MinorBlocksHash varchar(70), StateHashRoot varchar(70), MinorBlockCount int, TrxCount int, ProposalPubKey varchar(512), EpochNo int)`); err != nil {
 		log.Fatal(err)
 		return err
 	}
@@ -61,11 +61,11 @@ func initFinal_block() (err error) {
 	return
 }
 
-func AddFinal_block(height, timeStamp, TrxCount, EpochNo int, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, ProposalPubKey string) (err error) {
+func AddFinal_block(height, timeStamp, minorBlockCount, TrxCount, EpochNo int, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, ProposalPubKey string) (err error) {
 	var values string
-	values = fmt.Sprintf(`(%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d, '%s', %d)`, height, timeStamp, hash, prevHash, CMBlockHash, TrxRootHash,
-		StateDeltaRootHash, MinorBlocksHash, StateHashRoot, TrxCount, ProposalPubKey, EpochNo)
-	values = "insert into final_blocks(height, timeStamp, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, TrxCount, ProposalPubKey, EpochNo) values" + values
+	values = fmt.Sprintf(`(%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', %d)`, height, timeStamp, hash, prevHash, CMBlockHash, TrxRootHash,
+		StateDeltaRootHash, MinorBlocksHash, StateHashRoot, minorBlockCount, TrxCount, ProposalPubKey, EpochNo)
+	values = "insert into final_blocks(height, timeStamp, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, MinorBlockCount, TrxCount, ProposalPubKey, EpochNo) values" + values
 	_, err = cockroachDb.Exec(values)
 	if nil != err {
 		//log.Fatal(err)

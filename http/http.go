@@ -54,6 +54,8 @@ func StartHttpServer() (err error) {
 	router.POST("/eballscan/getNodesByHeight", getNodesByHeight)
 	router.POST("/eballscan/getNodeByPubKey", getNodeByPubKey)
 	router.POST("/eballscan/getNodes", getNodes)
+
+	//final block
 	router.POST("/eballscan/getFinalBlock", getFinalBlock)
 	router.POST("/eballscan/getFinalBlockByHeight", getFinalBlockByHeight)
 
@@ -394,7 +396,7 @@ func addFinal_block(c *gin.Context) {
 	StateHashRoot := c.PostForm("StateHashRoot")
 	ProposalPubKey := c.PostForm("ProposalPubKey")
 
-	errcode := database.AddFinal_block(Height, timeStamp, TrxCount, EpochNo, hash, PrevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash,
+	errcode := database.AddFinal_block(Height, timeStamp, -1, TrxCount, EpochNo, hash, PrevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash,
 		StateHashRoot, ProposalPubKey)
 	if nil != errcode {
 		c.JSON(http.StatusBadRequest, gin.H{"result": errcode.Error()})
@@ -441,7 +443,7 @@ func addMinor_block(c *gin.Context) {
 	ProposalPublicKey := c.PostForm("ProposalPublicKey")
 	counts := 1
 
-	errcode := database.AddMinor_block(Height, timeStamp, ShardId, CMEpochNo, counts, hash, PrevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ProposalPublicKey)
+	errcode := database.AddMinor_block(Height, timeStamp, ShardId, -1, CMEpochNo, counts, hash, PrevHash, TrxHashRoot, StateDeltaHash, CMBlockHash, ProposalPublicKey)
 
 	if nil != errcode {
 		c.JSON(http.StatusBadRequest, gin.H{"result": errcode.Error()})

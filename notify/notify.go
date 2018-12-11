@@ -17,16 +17,16 @@
 package notify
 
 import (
-	"time"
 	"strconv"
+	"time"
 
 	"github.com/ecoball/eballscan/data"
 	"github.com/ecoball/eballscan/database"
 	"github.com/ecoball/go-ecoball/common"
 	"github.com/ecoball/go-ecoball/common/elog"
+	"github.com/ecoball/go-ecoball/core/shard"
 	"github.com/ecoball/go-ecoball/core/types"
 	"github.com/ecoball/go-ecoball/spectator/info"
-	"github.com/ecoball/go-ecoball/core/shard"
 )
 
 var (
@@ -43,7 +43,7 @@ func Dispatch(one info.OneNotify) {
 			}*/
 			break
 		default:
-			
+
 		}
 	case info.ShardBlock:
 		switch one.BlockType {
@@ -68,7 +68,7 @@ func Dispatch(one info.OneNotify) {
 			}
 			break
 		default:
-		
+
 		}
 
 	default:
@@ -89,8 +89,8 @@ func handleCommittee_block(info []byte) error {
 
 	//add Committee_blocks
 	err := database.AddCommittee_block(int(oneBlock.Height), int(oneBlock.Nonce), int(oneBlock.Timestamp), nodeCounts, oneBlock.Hash().HexString(), oneBlock.PrevHash.HexString(),
-	oneBlock.ShardsHash.HexString(), common.ToHex(oneBlock.LeaderPubKey), oneBlock.Candidate.Port, oneBlock.Candidate.Address, common.ToHex(oneBlock.Candidate.PublicKey))
-	if err != nil{
+		oneBlock.ShardsHash.HexString(), common.ToHex(oneBlock.LeaderPubKey), oneBlock.Candidate.Port, oneBlock.Candidate.Address, common.ToHex(oneBlock.Candidate.PublicKey))
+	if err != nil {
 		log.Error("AddCommittee_block error: ", err)
 		return err
 	}
@@ -98,11 +98,11 @@ func handleCommittee_block(info []byte) error {
 	//add nodes
 	for _, v := range oneBlock.Shards {
 		for _, vv := range v.Member {
-			if err := database.AddNode(common.ToHex(vv.PublicKey), vv.Port, vv.Address, int(oneBlock.Height)); nil != err{
+			if err := database.AddNode(common.ToHex(vv.PublicKey), vv.Port, vv.Address, int(oneBlock.Height)); nil != err {
 				log.Error("AddNode error: ", err)
 				return err
 			}
-		}	
+		}
 	}
 
 	return nil
@@ -114,10 +114,20 @@ func handleFinal_block(info []byte) error {
 		log.Fatal(err)
 	}
 
-	if err := database.AddFinal_block(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.TrxCount), int(oneBlock.EpochNo), oneBlock.Hash().HexString(),
-							oneBlock.PrevHash.HexString(), oneBlock.CMBlockHash.HexString(), oneBlock.TrxRootHash.HexString(), oneBlock.StateDeltaRootHash.HexString(),
-						oneBlock.MinorBlocksHash.HexString(), oneBlock.StateHashRoot.HexString(), common.ToHex(oneBlock.ProposalPubKey)); nil != err{
+	//add final block
+	if err := database.AddFinal_block(int(oneBlock.Height), int(oneBlock.Timestamp), len(oneBlock.MinorBlocks), int(oneBlock.TrxCount), int(oneBlock.EpochNo), oneBlock.Hash().HexString(),
+		oneBlock.PrevHash.HexString(), oneBlock.CMBlockHash.HexString(), oneBlock.TrxRootHash.HexString(), oneBlock.StateDeltaRootHash.HexString(),
+		oneBlock.MinorBlocksHash.HexString(), oneBlock.StateHashRoot.HexString(), common.ToHex(oneBlock.ProposalPubKey)); nil != err {
 		return err
+	}
+
+	//add minor block
+	for _, oneMinorBlock := range oneBlock.MinorBlocks {
+		if err := database.AddMinor_block(int(oneMinorBlock.Height), int(oneMinorBlock.Timestamp), int(oneMinorBlock.ShardId), int(oneBlock.Height), int(oneMinorBlock.CMEpochNo), -1, oneMinorBlock.Hash().HexString(),
+			oneMinorBlock.PrevHash.HexString(), oneMinorBlock.TrxHashRoot.HexString(), oneMinorBlock.StateDeltaHash.HexString(), oneMinorBlock.CMBlockHash.HexString(),
+			common.ToHex(oneMinorBlock.ProposalPublicKey)); nil != err {
+			return err
+		}
 	}
 
 	return nil
@@ -129,13 +139,15 @@ func handleMinor_block(info []byte) error {
 		log.Fatal(err)
 	}
 
-	if err := database.AddMinor_block(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.ShardId), int(oneBlock.CMEpochNo), len(oneBlock.Transactions), oneBlock.Hash().HexString(),
-							oneBlock.PrevHash.HexString(), oneBlock.TrxHashRoot.HexString(), oneBlock.StateDeltaHash.HexString(), oneBlock.CMBlockHash.HexString(),
-							common.ToHex(oneBlock.ProposalPublicKey)); nil != err{
+	//add minor block
+	if err := database.AddMinor_block(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.ShardId), -1, int(oneBlock.CMEpochNo), len(oneBlock.Transactions), oneBlock.Hash().HexString(),
+		oneBlock.PrevHash.HexString(), oneBlock.TrxHashRoot.HexString(), oneBlock.StateDeltaHash.HexString(), oneBlock.CMBlockHash.HexString(),
+		common.ToHex(oneBlock.ProposalPublicKey)); nil != err {
 		return err
 	}
 
-	if err := handleTransaction(oneBlock.Transactions, oneBlock.MinorBlockHeader.GetHeight(), oneBlock.MinorBlockHeader.ShardId); nil != err{
+	//add transaction
+	if err := handleTransaction(oneBlock.Transactions, oneBlock.MinorBlockHeader.GetHeight(), oneBlock.MinorBlockHeader.ShardId); nil != err {
 		return err
 	}
 
@@ -149,14 +161,13 @@ func handleViewchangeblock(info []byte) error {
 	}
 
 	if err := database.AddViewchangeblock(int(oneBlock.Height), int(oneBlock.Timestamp), int(oneBlock.Round), int(oneBlock.CMEpochNo), int(oneBlock.FinalBlockHeight),
-								oneBlock.Hash().HexString(), oneBlock.PrevHash.HexString(), oneBlock.Candidate.Port, 
-								oneBlock.Candidate.Address, common.ToHex(oneBlock.Candidate.PublicKey)); nil != err{
+		oneBlock.Hash().HexString(), oneBlock.PrevHash.HexString(), oneBlock.Candidate.Port,
+		oneBlock.Candidate.Address, common.ToHex(oneBlock.Candidate.PublicKey)); nil != err {
 		return err
 	}
 
 	return nil
 }
-
 
 /*func handleBlock(info []byte) error {
 	oneBlock := types.Block{}
@@ -193,8 +204,8 @@ func handleTransaction(trxs []*types.Transaction, height uint64, ShardId uint32)
 		}
 		data.AddTransaction(common.ToHex(v.Hash.Bytes()), &data.TransactionInfo{int(v.Type), time.Unix(v.TimeStamp/1000000000, 0).Format("2006-01-02 15:04:05"),
 			v.Permission, v.From.String(), v.Addr.String(), int(height)})
-		
-		if v.Type == 0x02 {//新增账号交易处理
+
+		if v.Type == 0x02 { //新增账号交易处理
 			info := new(types.InvokeInfo)
 			data, err := v.Payload.Serialize()
 			if err != nil {
@@ -213,7 +224,7 @@ func handleTransaction(trxs []*types.Transaction, height uint64, ShardId uint32)
 					log.Fatal(err)
 					return err
 				}
-				
+
 			}
 		}
 
@@ -249,8 +260,8 @@ func handleTransaction(trxs []*types.Transaction, height uint64, ShardId uint32)
 			if err != nil {
 				log.Fatal(err)
 				return err
-			}	
-			
+			}
+
 			//to账户余额处理
 			to := v.Addr.String()
 			to_balance, err := database.QueryAccountBalance(to)
