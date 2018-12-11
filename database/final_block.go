@@ -111,7 +111,7 @@ func QueryFinalBlock(index, num int) ([]*data.Final_blockInfoH, int, error) {
 		pageNum = curr_max_final_height/num + 1
 	}
 
-	querysql := "select * from final_blocks order by timeStamp desc limit "
+	querysql := "select height, timeStamp, hash, prevHash, CMBlockHash, TrxRootHash, StateDeltaRootHash, MinorBlocksHash, StateHashRoot, TrxCount, ProposalPubKey, EpochNo from final_blocks order by timeStamp desc limit "
 	querysql = querysql + strconv.Itoa(num) + " offset " + strconv.Itoa((index-1)*num)
 	rows, err := cockroachDb.Query(querysql)
 	if err != nil {
