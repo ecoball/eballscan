@@ -35,9 +35,11 @@ func StartHttpServer() (err error) {
 	//register handle
 	router.POST("/eballscan/getBlock", getBlock)
 	router.POST("/eballscan/getBlockByHeight", getBlockByHeight)
+
+	//transaction
 	router.POST("/eballscan/getTransactionByHash", getTransactionByHash)
 	//router.POST("/eballscan/add_transaction", addTransaction)
-	router.POST("/eballscan/getTransactionByHeight", getTransactionByHeight)
+	router.POST("/eballscan/getTransactionByHeightAndShardId", getTransactionByHeightAndShardId)
 	router.POST("/eballscan/getTransaction", getTransaction)
 	router.POST("/eballscan/getTransactionsByAccountName", getTransactionsByAccountName)
 	router.POST("/eballscan/getAccounts", getAccounts)
@@ -219,15 +221,22 @@ func getTransactionByHash(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }*/
 
-func getTransactionByHeight(c *gin.Context) {
-	height_str := c.PostForm("blockHeight")
+func getTransactionByHeightAndShardId(c *gin.Context) {
+	height_str := c.PostForm("height")
 	blockHeight, err := strconv.Atoi(height_str)
 	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
 	}
 
-	info, err := database.QueryTransactionsByHeight(blockHeight)
+	shardId_str := c.PostForm("shardId")
+	shardId, err := strconv.Atoi(shardId_str)
+	if nil != err {
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
+	}
+
+	info, err := database.QueryTransactionsByHeightAndShardId(blockHeight, shardId)
 	if nil != err {
 		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
 		return
