@@ -104,7 +104,7 @@ func QueryOneCommitteeBlockByHash(hash string) (*data.Committee_blockInfo, int, 
 		return nil, -1, err
 	}
 
-	sqlStr = "select timeStamp, prevHash, shardsHash, leaderPubKey, port, adderss, publicKey, nonce, nodeCounts from committee_blocks where hash = " + hash
+	sqlStr = "select timeStamp, prevHash, shardsHash, leaderPubKey, port, adderss, publicKey, nonce, nodeCounts from committee_blocks where hash = '" + hash + "'"
 	if err := cockroachDb.QueryRow(sqlStr).Scan(&timestamp, &prevHash, &shardsHash, &leaderPubKey, &port, &address, &publicKey, &nonce, &nodeCounts); nil != err {
 		return nil, -1, err
 	}
