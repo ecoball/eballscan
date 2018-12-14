@@ -55,6 +55,7 @@ func StartHttpServer() (err error) {
 	//committee block
 	router.POST("/eballscan/getCommitteeBlock", getCommitteeBlock)
 	router.POST("/eballscan/getCommitteeBlockByHeight", getCommitteeBlockByHeight)
+	router.POST("/eballscan/getCommitteeBlockByHash", getCommitteeBlockByHash)
 	router.POST("/eballscan/getNodesByHeight", getNodesByHeight)
 	router.POST("/eballscan/getNodeByPubKey", getNodeByPubKey)
 	router.POST("/eballscan/getNodes", getNodes)

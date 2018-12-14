@@ -53,6 +53,18 @@ func getCommitteeBlockByHeight(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"max_height": max_height, "block": info})
 }
 
+func getCommitteeBlockByHash(c *gin.Context) {
+	hash := c.PostForm("hash")
+
+	info, max_height, err := database.QueryOneCommitteeBlockByHash(hash)
+	if nil != err {
+		c.JSON(http.StatusBadRequest, gin.H{"result": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"max_height": max_height, "block": info})
+}
+
 func getNodes(c *gin.Context) {
 	num_str := c.PostForm("num")
 	num, err := strconv.Atoi(num_str)

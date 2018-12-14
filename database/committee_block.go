@@ -93,6 +93,24 @@ func QueryOneCommitteeBlock(height int) (*data.Committee_blockInfo, int, error) 
 	return &data.Committee_blockInfo{timestamp / 1e6, hash, prevHash, shardsHash, leaderPubKey, data.NodeInfo{publicKey, address, port}, nonce, nodeCounts}, max_height, nil
 }
 
+func QueryOneCommitteeBlockByHash(hash string) (*data.Committee_blockInfo, int, error) {
+	var (
+		max_height, nonce, timestamp, nodeCounts                             int
+		prevHash, shardsHash, leaderPubKey, publicKey, address, port, sqlStr string
+	)
+
+	queryStr := "select max(height) from committee_blocks"
+	if err := cockroachDb.QueryRow(queryStr).Scan(&max_height); nil != err {
+		return nil, -1, err
+	}
+
+	sqlStr = "select timeStamp, prevHash, shardsHash, leaderPubKey, port, adderss, publicKey, nonce, nodeCounts from committee_blocks where hash = " + hash
+	if err := cockroachDb.QueryRow(sqlStr).Scan(&timestamp, &prevHash, &shardsHash, &leaderPubKey, &port, &address, &publicKey, &nonce, &nodeCounts); nil != err {
+		return nil, -1, err
+	}
+	return &data.Committee_blockInfo{timestamp / 1e6, hash, prevHash, shardsHash, leaderPubKey, data.NodeInfo{publicKey, address, port}, nonce, nodeCounts}, max_height, nil
+}
+
 func QueryCommitteeBlock(index, num int) ([]*data.Committee_blockInfoH, int, error) {
 	//var rows *sql.Rows
 	if 1 == index {
