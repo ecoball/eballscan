@@ -21,6 +21,7 @@ import (
 	"net"
 
 	"github.com/ecoball/go-ecoball/common/elog"
+	"github.com/ecoball/go-ecoball/common/message/mpb"
 	"github.com/ecoball/go-ecoball/spectator/info"
 )
 
@@ -41,6 +42,9 @@ func (this *BlockHeight) Deserialize(data []byte) error {
 func (this *BlockHeight) Type() uint32 {
 	return 0
 }
+func (this *BlockHeight) Identify() mpb.Identify {
+	return mpb.Identify(0)
+}
 
 type CommitteeHeight int
 
@@ -54,6 +58,9 @@ func (this *CommitteeHeight) Deserialize(data []byte) error {
 
 func (this *CommitteeHeight) Type() uint32 {
 	return 1
+}
+func (this *CommitteeHeight) Identify() mpb.Identify {
+	return mpb.Identify(1)
 }
 
 type FinalHeight int
@@ -69,6 +76,9 @@ func (this *FinalHeight) Deserialize(data []byte) error {
 func (this *FinalHeight) Type() uint32 {
 	return 2
 }
+func (this *FinalHeight) Identify() mpb.Identify {
+	return mpb.Identify(2)
+}
 
 type MinorHeight int
 
@@ -83,6 +93,9 @@ func (this *MinorHeight) Deserialize(data []byte) error {
 func (this *MinorHeight) Type() uint32 {
 	return 3
 }
+func (this *MinorHeight) Identify() mpb.Identify {
+	return mpb.Identify(3)
+}
 
 type ViewChangeHeight int
 
@@ -96,6 +109,9 @@ func (this *ViewChangeHeight) Deserialize(data []byte) error {
 
 func (this *ViewChangeHeight) Type() uint32 {
 	return 4
+}
+func (this *ViewChangeHeight) Identify() mpb.Identify {
+	return mpb.Identify(4)
 }
 
 func SynBlocks(conn net.Conn, message info.NotifyInfo) {

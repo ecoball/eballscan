@@ -27,6 +27,7 @@ import (
 	"github.com/ecoball/go-ecoball/core/shard"
 	"github.com/ecoball/go-ecoball/core/types"
 	"github.com/ecoball/go-ecoball/spectator/info"
+	"github.com/ecoball/go-ecoball/common/message/mpb"
 )
 
 var (
@@ -47,22 +48,22 @@ func Dispatch(one info.OneNotify) {
 		}
 	case info.ShardBlock:
 		switch one.BlockType {
-		case uint32(shard.HeCmBlock):
+		case mpb.Identify_APP_MSG_CM_BLOCK:
 			if err := handleCommittee_block(one.Info); nil != err {
 				log.Error("handleCommittee_block error: ", err)
 			}
 			break
-		case uint32(shard.HeFinalBlock):
+		case mpb.Identify_APP_MSG_FINAL_BLOCK:
 			if err := handleFinal_block(one.Info); nil != err {
 				log.Error("handleFinal_block error: ", err)
 			}
 			break
-		case uint32(shard.HeMinorBlock):
+		case mpb.Identify_APP_MSG_MINOR_BLOCK:
 			if err := handleMinor_block(one.Info); nil != err {
 				log.Error("handleMinor_block error: ", err)
 			}
 			break
-		case uint32(shard.HeViewChange):
+		case mpb.Identify_APP_MSG_VC_BLOCK:
 			if err := handleViewchangeblock(one.Info); nil != err {
 				log.Error("handleViewchangeblock error: ", err)
 			}
