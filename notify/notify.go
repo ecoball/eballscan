@@ -27,7 +27,6 @@ import (
 	"github.com/ecoball/go-ecoball/core/shard"
 	"github.com/ecoball/go-ecoball/core/types"
 	"github.com/ecoball/go-ecoball/spectator/info"
-	"github.com/ecoball/go-ecoball/common/message/mpb"
 )
 
 var (
@@ -39,14 +38,14 @@ func Dispatch(one info.OneNotify) {
 	case info.InfoBlock:
 		switch one.BlockType {
 		case 0:
-			/*if err := handleBlock(one.Info); nil != err {
+			if err := handleBlock(one.Info); nil != err {
 				log.Error("handleBlock error: ", err)
-			}*/
+			}
 			break
 		default:
 
 		}
-	case info.ShardBlock:
+	/*case info.ShardBlock:
 		switch one.BlockType {
 		case mpb.Identify_APP_MSG_CM_BLOCK:
 			if err := handleCommittee_block(one.Info); nil != err {
@@ -71,7 +70,7 @@ func Dispatch(one info.OneNotify) {
 		default:
 
 		}
-
+	*/
 	default:
 
 	}
@@ -170,7 +169,7 @@ func handleViewchangeblock(info []byte) error {
 	return nil
 }
 
-/*func handleBlock(info []byte) error {
+func handleBlock(info []byte) error {
 	oneBlock := types.Block{}
 	if err := oneBlock.Deserialize(info); nil != err {
 		log.Fatal(err)
@@ -188,12 +187,12 @@ func handleViewchangeblock(info []byte) error {
 		common.ToHex(oneBlock.MerkleHash.Bytes()), common.ToHex(oneBlock.StateHash.Bytes()), int(oneBlock.CountTxs), int(oneBlock.TimeStamp)})
 
 	//add transactions
-	if err := handleTransaction(oneBlock.Transactions, oneBlock.Height); nil != err {
+	if err := handleTransaction(oneBlock.Transactions, oneBlock.Height, 0); nil != err {
 		return err
 	}
 
 	return nil
-}*/
+}
 
 func handleTransaction(trxs []*types.Transaction, height uint64, ShardId uint32) error {
 	//add transactions
